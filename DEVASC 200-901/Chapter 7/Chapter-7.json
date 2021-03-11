@@ -1,0 +1,42 @@
+# JSON Data Format
+
+{
+
+    "home": [
+        "This is my house",
+        "Located in Carthage, NC"
+    ],
+    "rooms": {
+        "living_room": "true",
+        "kitchen": "false",
+        "study_room": [
+            {
+                "size": "20x30"
+            },
+            {
+                "desk": true
+            },
+            {
+                "lights": "On"
+            }
+        ]
+    }
+}
+
+===================================================================================================
+
+GET /devices?offset=100&limit=10
+{
+    "pagination": {
+        "ofset": 100, 
+        "limit": 10, 
+        "total": 220, 
+    },
+    "device": [
+        //...
+    ],
+    "links": {
+        "next": "http://myhouse.cisco.com/devices?offset=110&limit=10",
+        "prev": "http://myhouse.cisco.com/devices?offset=90&limit=10"
+    }   
+}

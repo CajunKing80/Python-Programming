@@ -1,0 +1,20 @@
+# XML Data Format
+
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <home>This is my house</home>
+    <home>Located in Carthage, NC</home>
+    <rooms>
+        <living_room>true</living_room>
+        <kitchen>false</kitchen>
+        <study_room>
+            <size>20x30</size>
+        </study_room>
+        <study_room>
+            <desk>true</desk>
+        </study_room>
+        <study_room>
+            <lights>On</lights>
+        </study_room>
+    </rooms>
+</root>
