@@ -58,3 +58,19 @@
 # HARD ============================================================================================
 # =================================================================================================
 
+import requests
+from pprint import PrettyPrinter
+
+
+pp = PrettyPrinter()
+ip_dictionary = {
+    "Class_A" : [],
+    "Class_B" : [],
+    "Class_C" : []
+}
+
+# Fetch data from URL:
+url = 'https://raw.githubusercontent.com/JohnFu11er/Code_Challenge_Data/main/network_addresses.json' 
+
+response = requests.request('GET',url,)
+pp.pprint(response.json())
