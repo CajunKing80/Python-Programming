@@ -107,3 +107,5 @@ if(key_exists(ip_data,'network_addresses')):
     print('Total IP addresses in each block:')
     for ip in results.keys():
         print(f'{ip} - {len(results[ip])}')
+
+json.dump('Code_Review_Mar_18.json')
