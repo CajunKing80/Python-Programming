@@ -20,6 +20,7 @@
 # pling_plang()
 
 
+
 # =================================================================================================
 # MEDIUM ==========================================================================================
 # =================================================================================================
@@ -98,11 +99,11 @@ def parse_data(obj_dict):
     return ip_dict
 
 # Function to sort IP addresses
-def sort_data(ipDict):
-    for x in ipDict:
-        items = sorted(ipDict[x], key = ipaddress.IPv4Address)
-        ipDict[x].clear()
-        ipDict[x] = items
+def sort_data(ip_dict):
+    for x in ip_dict:
+        items = sorted(ip_dict[x], key = ipaddress.IPv4Address)
+        ip_dict[x].clear()
+        ip_dict[x] = items
 
 if(key_exists(ip_data,'network_addresses')):
     #Pass in the dictionary to our parse function.
