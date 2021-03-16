@@ -29,7 +29,7 @@ def keyExists(dicObj,key):
 def parseData(dicObj):
     #a dictionary object to hold our parsed data.
     netDic = {}
-    for ip in dicObj:
+    for ip in dicObj: 
         ipSplit = ip.split('.') #Split the IP Address based off the '.' as a delimiter.
        
         ipHeader = f'{ipSplit[0]}.{ipSplit[1]}' #reconstruct the first two octets into a formatted string.

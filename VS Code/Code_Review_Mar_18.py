@@ -1,6 +1,6 @@
-# # =================================================================================================
-# # EASY ============================================================================================
-# # =================================================================================================
+# =================================================================================================
+# EASY ============================================================================================
+# =================================================================================================
 
 
 # def pling_plang():
@@ -20,15 +20,15 @@
 # pling_plang()
 
 
-# # =================================================================================================
-# # MEDIUM ==========================================================================================
-# # =================================================================================================
+# =================================================================================================
+# MEDIUM ==========================================================================================
+# =================================================================================================
 
 
 # # Create the function
 # def pling_plang():
 
-#     # Define the variable "my_dictionary" as a dictionary with empty lists as placeholders for the values. 
+    # Define the variable "my_dictionary" as a dictionary with empty lists as placeholders for the values. 
 #     my_dictionary = {
 #         "Pling": [],
 #         "Plang": [],
@@ -54,22 +54,21 @@
 # pling_plang()
 
 
-# # =================================================================================================
-# # HARD ============================================================================================
-# # =================================================================================================
+# =================================================================================================
+# HARD ============================================================================================
+# =================================================================================================
 
 
 import requests
 import json
-from pprint import PrettyPrinter
+import ipaddress 
 
 
 # Fetch data from URL and define global variables 
 url = 'https://raw.githubusercontent.com/JohnFu11er/Code_Challenge_Data/main/network_addresses.json' 
-pp = PrettyPrinter()
 response = requests.request('GET',url,)
-pp.pprint(response.json())
 ip_data = response.json()
+
 
 # Function to return if a key exists in a dictionary
 def key_exists(obj_dict,key):
@@ -77,7 +76,6 @@ def key_exists(obj_dict,key):
         return True
     else:
         return False
-
 
 # Function to parse data from the GET call into a dictionary object
 def parse_data(obj_dict):
@@ -99,13 +97,21 @@ def parse_data(obj_dict):
             ip_dict[ip_header] = [ip]
     return ip_dict
 
+# Function to sort IP addresses
+def sort_data(ipDict):
+    for x in ipDict:
+        items = sorted(ipDict[x], key = ipaddress.IPv4Address)
+        ipDict[x].clear()
+        ipDict[x] = items
 
 if(key_exists(ip_data,'network_addresses')):
     #Pass in the dictionary to our parse function.
     results = parse_data(ip_data['network_addresses']) 
+    sort_data(results)
     print(f'Total IP Blocks: {len(results)}')
     print('Total IP addresses in each block:')
     for ip in results.keys():
         print(f'{ip} - {len(results[ip])}')
 
-json.dump('Code_Review_Mar_18.json')
+with open ('Code_Review_Mar_18.json', 'w') as json_data:
+    json.dump(results, json_data, indent = 4)
