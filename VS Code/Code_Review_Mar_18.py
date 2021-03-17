@@ -109,10 +109,13 @@ if(key_exists(ip_data,'network_addresses')):
     #Pass in the dictionary to our parse function.
     results = parse_data(ip_data['network_addresses']) 
     sort_data(results)
-    print(f'Total IP Blocks: {len(results)}')
-    print('Total IP addresses in each block:')
+    print('===================================')
+    print(f'======= Total IP Subnets: {len(results)} =======')
+    print('===================================')
+    print('=== Total Addresses Per Subnet: ===')
     for ip in results.keys():
-        print(f'{ip} - {len(results[ip])}')
+        print(f'{ip:15} {":" :^7} {len(results[ip]) :>11}')
+    print('===================================')
 
 with open ('Code_Review_Mar_18.json', 'w') as json_data:
     json.dump(results, json_data, indent = 4)
