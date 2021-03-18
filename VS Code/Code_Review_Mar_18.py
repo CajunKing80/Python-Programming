@@ -3,21 +3,21 @@
 # =================================================================================================
 
 
-# def pling_plang():
+def pling_plang():
 
-#     '''Pling Plang is a function used to return the output  of intergers divisible by 3, 5, and 7'''
+    '''Pling Plang is a function used to return the output  of intergers divisible by 3, 5, and 7'''
 
-#     for i in range(1,101):
-#         if i % 3 == 0:
-#             print("Pling")
-#         elif i % 5 == 0:
-#             print("Plang")
-#         elif i % 7 == 0:
-#             print("Plong")
-#         else:
-#             print(i)
+    for i in range(1,101):
+        if i % 3 == 0:
+            print('Pling')
+        elif i % 5 == 0:
+            print('Plang')
+        elif i % 7 == 0:
+            print('Plong')
+        else:
+            print(i)
 
-# pling_plang()
+pling_plang()
 
 
 
@@ -118,4 +118,4 @@
 #     print('===================================')
 
 # with open ('Code_Review_Mar_18.json', 'w') as json_data:
-    json.dump(results, json_data, indent = 4)
+    # json.dump(results, json_data, indent = 4)
