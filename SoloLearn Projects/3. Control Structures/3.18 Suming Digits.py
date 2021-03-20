@@ -34,6 +34,5 @@ length = 0
 
 for i in str(n): 
     length += int(i)
-    print(length)
-    break
+    
 print(length)
