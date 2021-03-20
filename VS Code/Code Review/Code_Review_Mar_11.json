@@ -1,0 +1,56 @@
+{
+    "car_1" :
+    {
+        "ID": "1", 
+        "Year": "1975",
+        "Make": "Ford",
+        "Model": "Mustang",
+        "Miles": "12,300",
+        "Price": "45,000"
+    },
+    "car_2" :
+    {
+        "ID": "2", 
+        "Year": "1980",
+        "Make": "Chevy",
+        "Model": "S-10",
+        "Miles": "85,000",
+        "Price": "15,000"    
+    },
+    "car_3" :
+    {
+        "ID": "3",
+        "Year": "2018",
+        "Make": "BMW",
+        "Model": "325i",
+        "Miles": "60,000",
+        "Price": "20,000"        
+    },
+    "car_4" : 
+    {
+        "ID": "4",
+        "Year": "2015",
+        "Make": "Toyota",
+        "Model": "Tacoma",
+        "Miles": "55,000",
+        "Price": "28,000"       
+    },
+    "car_5" : 
+    {
+        "ID": "5",
+        "Year": "1965",
+        "Make": "Chevy",
+        "Model": "Camaro",
+        "Miles": "68,000",
+        "Price": "43,000"    
+    },
+    "car_6" : 
+    {
+        "ID": "6",
+        "Year": "2017",
+        "Make": "Chevy",
+        "Model": "Surbaban",
+        "Miles": "96,000",
+        "Price": "22,000"    
+    }
+}   
