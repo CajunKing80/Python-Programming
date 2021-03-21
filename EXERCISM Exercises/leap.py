@@ -1,10 +1,14 @@
-def leap_year():
+def leap_year(year):
     
-    year = int(input())
+    
+    if year < 0:
+        raise ValueError('The Year Cannot Be a Negative Value.')
+    
 
     if year % 400 == 0 or year % 4 == 0 and year % 100 != 0:
-        print('Leap Year')
+        return True
     else:
-        print('Not a Leap Year')
+        return False
 
-leap_year()
+year = int(input())
+leap_year(year)
