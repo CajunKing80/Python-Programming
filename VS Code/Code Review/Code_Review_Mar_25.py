@@ -42,37 +42,84 @@
 # =================================================================================================
 
 
+# import requests
+# import json
+# import time
+# from datetime import datetime 
+ 
+
+# def get_data():
+    
+#     timer = 1
+#     while timer:
+
+#         url = 'http://api.open-notify.org/iss-now.json'
+#         req = requests.request('GET',url,)
+#         json_data = req.json()
+    
+#         print(f"time - {json_data['timestamp']} lat - {json_data['iss_position']['latitude']} long - {json_data['iss_position']['longitude']}")
+#         time.sleep(1)
+
+# get_data()
+
+
+# for key in json_data:
+#     if key == 'timestamp':
+#         iss_data["Timestamp"].append(json_data["timestamp"])
+#     if key == "iss_position":
+#         iss_data["Latitude"].append(json_data["iss_position"]["latitude"])
+#     if key == "iss_position":
+#         iss_data["Longitude"].append(json_data["iss_position"]["longitude"])
+
+# iss_data = {
+#     "Timestamp": [],
+#     "Latitude": [],
+#     "Longitude": []
+# }
+# print(iss_data)
+
+
+# =================================================================================================
+# HARD ============================================================================================
+# =================================================================================================
+
+
 import requests
 import json
 import time
 from datetime import datetime 
 
+
+def get_iss_data():
     
-url = 'http://api.open-notify.org/iss-now.json'
-req = requests.request('GET',url,)
-json_data = req.json()
+    counter = 11
+    while counter > 1:
 
-iss_data = {
-    "Timestamp": [],
-    "Latitude": [],
-    "Longitude": []
-}
-
-# print(iss_data)
-
-def get_data():
+        url = 'http://api.open-notify.org/iss-now.json'
+        req = requests.request('GET',url,)
+        json_data = req.json()
     
-    while True:
-
-        for key in json_data:
-            if key == 'timestamp':
-                iss_data["Timestamp"].append(json_data["timestamp"])
-            if key == "iss_position":
-                iss_data["Latitude"].append(json_data["iss_position"]["latitude"])
-            if key == "iss_position":
-                iss_data["Longitude"].append(json_data["iss_position"]["longitude"])
-               
-        print(iss_data)
+        ISS_Position = {
+            json_data['timestamp']: {
+                "Latitude": json_data['iss_position']['latitude'],
+                "Longitude": json_data['iss_position']['longitude']
+            }
+        }
+        
+        print(f"time - {json_data['timestamp']} lat - {json_data['iss_position']['latitude']} long - {json_data['iss_position']['longitude']}")
+        counter = counter - 1
         time.sleep(1)
 
-get_data()
+get_iss_data()
+
+with open ('Code_Review_Mar_125.json', 'w') as json_data:
+    json.dump(results, json_data, indent = 4)
+
+# for key in json_data:
+#     if key == 'timestamp':
+#         iss_data["Timestamp"].append(json_data["timestamp"])
+#     if key == "iss_position":
+#         iss_data["Latitude"].append(json_data["iss_position"]["latitude"])
+#     if key == "iss_position":
+#         iss_data["Longitude"].append(json_data["iss_position"]["longitude"])
+# print(iss_data)
