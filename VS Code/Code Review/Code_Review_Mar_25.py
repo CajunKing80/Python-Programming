@@ -3,19 +3,19 @@
 # =================================================================================================
 
 
-from datetime import datetime
-import time
+# from datetime import datetime
+# import time
 
 
-def get_time():
+# def get_time():
 
-    while True:
+#     while True:
         
-        current_time = datetime.now()
-        print(current_time.strftime("%m-%d-%Y %H:%M:%S"))
-        time.sleep(1)
+#         current_time = datetime.now()
+#         print(current_time.strftime("%m-%d-%Y %H:%M:%S"))
+#         time.sleep(1)
 
-get_time()
+# get_time()
 
 
 # import tkinter as tk
@@ -68,33 +68,29 @@ get_time()
 # =================================================================================================
 
 
-# import requests
-# import json
-# import time
-# from datetime import datetime 
+import requests
+import json
+import time
+from datetime import datetime 
 
 
-# def get_iss_data():
+def get_iss_data(counter, interval):
     
-#     counter = 11
-#     while counter > 1:
-
-#         url = 'http://api.open-notify.org/iss-now.json'
-#         req = requests.request('GET',url,)
-#         json_data = req.json()
+    iss_position_1 = {}
     
-#         ISS_Position = {
-#             json_data['timestamp']: {
-#                 "Latitude": json_data['iss_position']['latitude'],
-#                 "Longitude": json_data['iss_position']['longitude']
-#             }
-#         }
-        
-#         print(f"time - {json_data['timestamp']} lat - {json_data['iss_position']['latitude']} long - {json_data['iss_position']['longitude']}")
-#         counter = counter - 1
-#         time.sleep(1)
+    while counter >= 1:
 
-# get_iss_data()
+        json_data = requests.get('http://api.open-notify.org/iss-now.json').json()
+        converted = str(datetime.fromtimestamp(json_data['timestamp']))
+            
+        iss_position_1[converted] = {"Latitude": json_data['iss_position']['latitude'],
+            "Longitude": json_data['iss_position']['longitude']}
+        print(f"Time - {json_data['timestamp']} Lat - {json_data['iss_position']['latitude']} Long - {json_data['iss_position']['longitude']}")
+        counter -= 1
+        time.sleep(interval)
+    
+    iss_position = {'ISS_Postition': iss_position_1}
+    with open ('Code_Review_Mar_25.json', 'w') as json_data:
+        json.dump(iss_position, json_data, indent = 2)
 
-# with open ('Code_Review_Mar_125.json', 'w') as json_data:
-#     json.dump(results, json_data, indent = 4)
+get_iss_data(10, 1)
