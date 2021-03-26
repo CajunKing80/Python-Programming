@@ -1,3 +1,5 @@
+import unittest
+
 def convert(number):
     result = ""
     if number % 3 == 0: result += "Pling"
@@ -5,3 +7,6 @@ def convert(number):
     if number % 7 == 0: result += "Plong"
     if result == "": result += str(number)
     return result
+
+
+print(unittest(dir)
