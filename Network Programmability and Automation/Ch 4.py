@@ -1,3 +1,7 @@
+    ###############################################################
+    ###############     LEARNING TO USE STRINGS     ###############
+    ###############################################################
+
 hostname = 'Router_1'
 
 print (hostname)
@@ -68,3 +72,83 @@ cmds_list = commands.split(' ; ')
 
 ipaddr = '10.1.20.30'
 ipaddr.split('.')
+
+    ###############################################################
+    ###############     LEARNING TO USE INTEGERS    ###############
+    ###############################################################
+
+# ADDITION
+cpu = 14.3
+type (cpu)
+
+5 + 3
+
+a = 1
+b = 2
+c = a + b
+
+counter = 1
+counter = counter + 1
+counter += 1
+
+# SUBTRACTION
+
+100 - 90
+
+counter = 10
+counter = counter - 1
+counter -= 1
+
+# MULTIPLICATION
+
+100 * 50
+
+print (2 * 50)
+
+print ('*' * 50)
+print ('=' * 50)
+
+# DIVISION
+
+100 / 50
+
+12 / 10
+
+12 % 10
+
+    ###############################################################
+    ###############     LEARNING TO USE BOOLEANS    ###############
+    ###############################################################
+
+exists = True
+exists
+
+True and True
+True and False
+False and False
+
+value1 = True
+value2 = False
+value1 and value2
+value1 or value2
+
+value3 = True
+value4 = True
+value1 and value2 and value3 and value4
+value1 and value3 and value4
+
+not False
+is_layer3 = True
+is_layer3
+not is_layer3
+
+True == True
+True != False
+'network' == 'network'
+'network' == 'no_network'
+
+    ###############################################################
+    #############     LEARNING TO USE PYTHON LISTS    #############
+    ###############################################################
+
+  
