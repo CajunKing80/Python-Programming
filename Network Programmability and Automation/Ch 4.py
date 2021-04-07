@@ -151,4 +151,100 @@ True != False
     #############     LEARNING TO USE PYTHON LISTS    #############
     ###############################################################
 
-  
+hostnames = ['R1', 'R2', 'R3', 'R4', 'R5']
+commands = ['config t', 'interface Ethernet1/1', 'shutdown']
+new_list = ['Router1', False, 5]
+print (new_list)
+
+interfaces = ['Eth1/1', 'Eth1/2', 'Eth1/3', 'Eth1/4']
+print (interfaces[0])
+print (interfaces[1])
+print (interfaces[2])
+print (interfaces[3])
+
+len(interfaces)
+
+interfaces[-1]
+
+dir(interfaces)
+
+# Append
+
+vendors = []
+vendors.append('Arista')
+print(vendors)
+vendors.append('Cisco')
+print(vendors)
+
+# Insert
+
+commands = ['interface Eth1/1', 'IP Address 1.1.1.1/32']
+commands.insert(0, 'conf t')
+commands
+commands.insert(2, 'no switchport')
+commands
+
+# Count
+
+vendors = ['Cisco', 'Cisco', 'Juniper', 'Arista', 'Cisco', 'HP', 'Cumulus', 'Arista', 'Cisco']
+vendors.count('Cisco')
+vendors.count('Arista')
+
+# Pop and Index
+
+hostnames = ['R1', 'R2', 'R3', 'R4', 'R5']
+hostnames.pop()
+'R5'
+print (hostnames)
+
+hostnames.index('R2')
+hostnames.pop(1) # Or hostnames.pop(hostnames.index('r2'))
+print(hostnames)
+
+# Sort
+
+available_ips = ['10.1.1.1', '10.1.1.9', '10.1.1.8', '10.1.1.7', '10.1.1.4']
+available_ips.sort()
+print (available_ips)
+
+device = ['Router', 'Juniper', '12.2']
+
+    ###############################################################
+    #########    LEARNING TO USE PYTHON DICTIONARIES   ############
+    ###############################################################
+
+device = {
+    'Hostname': 'Router1', 
+    'Vendor': 'Juniper', 
+    'OS': '12.2'
+    }
+print (device)
+print (device['Hostname'])
+print (device['Vendor'])
+print (device['OS'])
+
+device = {}
+device['Hostname'] = 'Router1'
+device['Vendor'] = 'Juniper'
+device['OS'] = '12.2'
+print (device)
+
+device = dict(Hostname = "Router1", Vendor = "Juniper", OS = "12.2")
+print (device)
+
+# Get
+
+device.get('Hostname')
+device.get('Vendor')
+device.get('OS')
+device.get('Model', False)
+device.get('Model', 'DOES NOT EXIST')
+device.get('Hostname', 'DOES NOT EXIST')
+
+# Keys & Values
+
+device.keys()
+device.values()
+
+# Pop
+
