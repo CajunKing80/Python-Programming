@@ -248,3 +248,165 @@ device.values()
 
 # Pop
 
+device.pop('Vendor')
+
+# Update
+
+oper = dict(CPU = '5%', Memory = '10%')
+oper
+device.update(oper)
+device
+
+# Items
+
+for key, value in device.items():
+    print (key + ':' + value)
+
+    ###############################################################
+    #########    LEARNING TO USE PYTHON SETS & TUPLES   ###########
+    ###############################################################
+
+# Sets
+
+vendors = set(['Arista', 'Cisco', 'Arista', 'Cisco', 'Juniper', 'Cisco'])
+vendors
+len(vendors)
+
+#  Tuples
+
+description = tuple(['Router1', 'Portland'])
+description
+print(description[0])
+
+# Adding Conditional Logic
+
+hostname = 'NYC'
+if hostname == 'NYC':
+    print('The hostname is NYC')
+    print(len(hostname))
+    print('The End')
+
+hostname = 'DEN_CO'
+if hostname == 'NYC':
+    print ('The hostname is NYC')
+elif hostname == 'NJ':
+    print ('the hostname is NJ')
+else: 
+    print ('UNKNOWN HOSTNAME')
+
+# Containment
+
+vendors = ['Arista', 'Juniper', 'Big Switch', 'Cisco']
+'Arista' in vendors
+
+if 'Arista' in vendors:
+    print ('Arista is deployed')
+
+version = 'CRS100V Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Version 16.3.1, RELEASE'
+"16.3.1" in version 
+
+if "16.3.1" in version: 
+    print("Version is 16.3.1")
+
+    ###############################################################
+    #################    USING LOOPS IN PYTHON   ##################
+    ###############################################################
+
+counter = 1
+while counter < 5:
+    print (counter)
+    counter += 1
+
+vendors = ['Arista', 'Juniper', 'Big Switch', 'Cisco']
+for vendor in vendors:
+    print ('VENDOR: ' + vendor)
+
+vendors = ['Arista', 'Juniper', 'Big Switch', 'Cisco', 'O\'Reilly']
+vendors
+approved_vendors = ['Arista', 'Juniper', 'Big Switch', 'Cisco']
+for vendor in vendors: 
+    if vendor not in approved_vendors:
+        print ('NETWORK VENDOR NOT APPROVED: ' + vendor)
+
+# ===============================================================================
+
+COMMANDS = {
+    'description': 'description {}', 
+    'speed': 'speed {}', 
+    'duplex': 'duplex {}',
+}
+print (COMMANDS)
+CONFIG_PARAMS = {
+    'description': 'auto description by Python', 
+    'speed': '10000', 
+    'duplex': 'auto',
+}
+print (CONFIG_PARAMS)
+
+commands_list = []
+
+for feature, value in CONFIG_PARAMS.items():
+    command = COMMANDS.get(feature).format(value)
+    commands_list.append(command)
+
+commands_list.insert(0, 'interface Eth1/1')
+print (commands_list)
+
+# Enumerate
+
+# vendors = ['Arista', 'Juniper', 'Big Switch', 'Cisco']
+# for index, each in enumerate(vendors):
+#     if each == 'Arista':
+#         print('Arista index is at: ' + index)
+
+    ###############################################################
+    #################    USING PYTHON FUNCTIONS  ##################
+    ###############################################################
+
+def print_vendor(net_vendor):
+    print (net_vendor)
+
+vendors = ['Arista', 'Juniper', 'Big Switch', 'Cisco']
+for vendor in vendors:
+    print_vendor(vendor)
+
+# def get_commands(vlan, name):
+#     commands = []
+#     commands.append('vlan ' + vlan)
+#     commands.append('name ', + name)
+#     return commands
+
+# def push_commands(device, commands):
+#     print('Connecting to device: ' + device)
+#     for cmd in commands:
+#         print ('Sending command: ' + cmd)
+
+# devices = ['Sw1', 'Sw2', 'Sw3']
+# vlans = [
+#     {
+#         'id': 10, 
+#         'name': 'USERS'
+#     },
+#     {
+#         'id': 20,
+#         'name': 'VOICE'
+#     },
+#     {
+#         'id': 30,
+#         'name': 'WLAN'
+#     }
+# ]
+
+# for vlan in vlans: 
+#     id = vlan.get('id')
+#     name = vlan.get('name')
+#     print('\n')
+#     print('CONFIGURING VLAN: ' + id)
+#     commands = get_commands(id, name)
+#     for device in devices:
+#         push_commands(device, commands)
+#         print('\n')
+
+    ###############################################################
+    ###################    WORKING WITH FILES   ###################
+    ###############################################################
