@@ -4,18 +4,23 @@
 
 
 import unittest
-from Code_Review_Apr_15 import name
 
-class NameTest(unittest, TestCase):
+class NameTest(unittest.TestCase):
     
     def test_hello_first(self):
-        self.assertEqual(Hello("John"), "Hello John")
+        self.assertEqual("Hello" + " " + ("John"), "Hello John")
 
     def test_hello_last(self):
-        self.assertEqual(Hello("John Doe"), "Hello John Doe")
+        self.assertEqual("Hello" + " " + ("John Doe"), "Hello John Doe")
 
-    def test_hello_is_not_integer(self):
-        self.assertIsNot(int("John", 9))
+
+class GetName(unittest.TestCase):
+    
+    # def test_first_upper(self):
+    #     self.assert
+
+    # def test_last_upper(self):
+    #     self.assert
 
 if __name__ == '__main__':
     unittest.main()
