@@ -464,4 +464,37 @@ write_file.close()
     ################    CREATING PYTHON PROGRAMS   ################
     ###############################################################
 
-    
+import push # from python functions section above
+
+dir (push)
+
+device = 'Router1'
+commands = ['interface Eth1/1', 'shutdown']
+
+push.push_commands(device, commands)
+
+from push import push_commands
+
+device = 'Router1'
+commands = ['interface Eth1/1', 'shutdown']
+
+push_commands(device, commands)
+
+from push import push_commands as pc 
+
+device = 'Router1'
+commands = ['interface Eth1/1', 'shutdown']
+
+pc(device, commands)
+
+    ###############################################################
+    #########    Passing Arguments into Python Scripts   ##########
+    ###############################################################
+
+#!/usr/bin/env python
+
+import sys
+
+if __name__ == "__main__":
+    print(sys.argv)
+
