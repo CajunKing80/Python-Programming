@@ -1,0 +1,9 @@
+---
+  - name: Display Localhost Info
+    hosts: localhost
+    gather_facts: yes
+
+    tasks:
+      - name: EASY Return localhost Ansible facts
+        debug: 
+          msg: "{{ ansible_facts }}"
