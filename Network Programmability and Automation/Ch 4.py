@@ -502,3 +502,39 @@ if __name__ == "__main__":
     ######## Learning Additional Tips & Tricks with Python ########
     ###############################################################
 
+dir()
+type()
+help()
+isinstance()
+
+hostname = 'router1'
+type(hostname)
+dir(hostname)
+help(hostname.upper)
+
+hostname = ''
+devices = []
+
+if isinstance(devices, list):
+    print('devices is a list')
+
+if isinstance(hostname, str):
+    print('hostname is a string')
+
+if __name__ == "__main__":
+    devices = ['r1', 'r2,', 'r3']
+
+    hostname = 'router5'
+
+devices = []
+if not devices: 
+    print('devices is empty')
+
+hostname = 'something'
+if hostname:
+    print('hostname is not null')
+
+hostname = 'r5'
+interface = 'Eth1/1'
+test = 'device %s has one interface: %s ' % (hostname, interface)
+print(test)
