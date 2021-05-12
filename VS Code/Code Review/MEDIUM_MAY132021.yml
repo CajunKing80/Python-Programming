@@ -1,0 +1,22 @@
+---
+  - name: MEDIUM May 13 2021
+    hosts: localhost
+    gather_facts: no
+
+    tasks:
+      - name: TASK 1 - Create router_configs directory
+        file:
+          path: ./router_configs
+          state: directory
+
+      - name: TASK 2 - Create sub-directory router configs
+        file: 
+          path: ./router_configs/router_{{ item }}.cfg
+          state: touch
+        loop: "{{ range(1,11) | list }}"
+
+      - name: TASK 3 - Create config files for each router in devices file
+        template: 
+          src: ./templates/router_config.j2
+          dest: ./router_configs/router_{{ item }}.cfg
+        loop: "{{  }}"
