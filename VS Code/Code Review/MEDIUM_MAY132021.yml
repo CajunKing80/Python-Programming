@@ -17,6 +17,6 @@
 
       - name: TASK 3 - Create config files for each router in devices file
         template: 
-          src: ./templates/router_config.j2
-          dest: ./router_configs/router_{{ item }}.cfg
-        loop: "{{  }}"
+          src: /etc/ansible/templates/router_config.j2
+          dest: ./router_configs/{{ item.key }}
+        loop: "{{ 
