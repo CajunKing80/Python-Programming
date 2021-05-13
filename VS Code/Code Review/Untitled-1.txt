@@ -1,3 +1,5 @@
+Next weeks code review is posted. I will work to make the next challenge functionally more pgressive from easy to hard. Thank John and Amy for the exponentially dumbed down challenge this week. 
+
 
 EASY
 
@@ -10,7 +12,7 @@ Ex.
 
 192.168.0.0
 192.168.0.7
-6
+6 hosts in this range
 
 MEDIUM
 
@@ -23,4 +25,4 @@ Ex.
 ('192.169.0.64/27')
 ('192.169.0.96/27')
 
-Private
+Public 
