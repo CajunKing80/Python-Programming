@@ -1,9 +1,9 @@
-
-from ipaddress import IPv4Network, IPv4Address
+import ipaddress
 
 def firstlast(subnet):
 
-    subnet = IPv4Network('10.0.0.0/8')
-    print(str(subnet.network_address))
-
+    subnet = ipaddress.ip_network(subnet)
+    network = str(subnet.network_address) + '\n' + str(subnet.broadcast_address)
+    print(network)
+ 
 firstlast('192.168.0.0/24')
