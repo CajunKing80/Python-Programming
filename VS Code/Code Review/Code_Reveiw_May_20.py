@@ -12,14 +12,13 @@ import ipaddress
 net4 = ipaddress.ip_network ('172.16.0.0/16')
 all_hosts = list(net4.hosts())
 
-print ()
+print("********** EASY **********")
 print (net4.network_address)
 print (net4.broadcast_address)
 print (net4.netmask)
 print (net4.num_addresses)
 print (len(all_hosts))
-print ()
-print (net4.hosts())
+print("********** EASY **********")
 
 
 def firstlast(subnet):
@@ -27,8 +26,8 @@ def firstlast(subnet):
     subnet = ipaddress.ip_network(subnet)
     network = str(subnet.network_address) + '\n' + str(subnet.broadcast_address)
     print ()
-    print(network)
-    print()
+    print (network)
+    print ()
  
 firstlast('192.168.0.0/24')
 
@@ -42,12 +41,13 @@ firstlast('192.168.0.0/24')
 
 from ipaddress import IPv4Network
 
-
-network = IPv4Network('192.169.0.0/24')
-for net in network.subnets(new_prefix=27):
+print("********** MEDIUM **********")
+network = IPv4Network('192.168.0.0/24')
+for net in network.subnets(new_prefix=28):
     print(net)
 
 if network.is_private == True:
-    print(f'\n{network} is a Private Network\n')
+    print(f'{network} is a Private Network')
 else: 
-    print(f'\n{network} is a Public Network\n')
+    print(f'{network} is a Public Network')
+print("********** MEDIUM **********")
