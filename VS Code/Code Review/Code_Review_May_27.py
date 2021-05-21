@@ -1,50 +1,102 @@
-from ansible.module_utils.basic import AnsibleModule
+# =================================================================================================
+# EASY ============================================================================================
+# =================================================================================================
 
-if __name__ == '__main__':
-    main()
+alphabet = []
 
-def main():
-    data = {
-        "host" : {
-            "default" : "localhost", 
-            "type" : "str"
-        },
-        "username" : {
-            "default" : "username", 
-            "type" : "str"
-        },
-        "password" : {
-            "default" : "password", 
-            "type" : "str"
-        },
-        "url" : {
-            "default" : "localhost", 
-            "type" : "str"
-        }
-    }
+for letter in 'abcdefghijklmnopqrstuvwxyz': 
+    alphabet.append(letter)
+print(alphabet)
 
-    module = AnsibleModule(argument_spec = data)
+alphabet = [letter for letter in 'abcdefghijklmnopqrstuvwxyz']
+print (alphabet)
 
-host = module.params.get('host')
-username = module.params.get('username')
-password = module.params.get('password')
-url = 'http://' + host + '/authentication'
-module.params.update({"url": url})
+# =================================================================================================
+# MEDIUM ==========================================================================================
+# =================================================================================================
 
-module.exit_json(changed=True, meta=module.params)
+# Conditional List Comprehension
 
+number_list = [number for number in range(20) if number % 2 != 0]
+print (number_list)
 
+# Nested List Comprehension
 
+numbers = []
+for number in range(100):
+    if number % 2 == 0 and number % 5 == 0:
+        numbers.append(number)
+print (numbers) 
 
+listOfNumbers = [number for number in range(100) if number % 2 == 0 if number % 5 == 0]
+print (listOfNumbers)
 
+# =================================================================================================
+# HARD ============================================================================================
+# =================================================================================================
 
-
-
-
+vowels = ["a","e","i","o","u"]
+filename = "untitled-1.txt"
+words = [word for word in open(filename, "r").read().split()]
+multivowels = [each for each in open(filename, "r").read().split() if sum(letter in vowels for letter in each) >= 2]
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# from ansible.module_utils.basic import AnsibleModule
+
+# if __name__ == '__main__':
+#     main()
+
+# def main():
+#     data = {
+#         "host" : {
+#             "default" : "localhost", 
+#             "type" : "str"
+#         },
+#         "username" : {
+#             "default" : "username", 
+#             "type" : "str"
+#         },
+#         "password" : {
+#             "default" : "password", 
+#             "type" : "str"
+#         },
+#         "url" : {
+#             "default" : "localhost", 
+#             "type" : "str"
+#         }
+#     }
+
+#     module = AnsibleModule(argument_spec = data)
+
+# host = module.params.get('host')
+# username = module.params.get('username')
+# password = module.params.get('password')
+# url = 'http://' + host + '/authentication'
+# module.params.update({"url": url})
+
+# module.exit_json(changed=True, meta=module.params)
 
 
 # import requests
