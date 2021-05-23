@@ -1,4 +1,4 @@
-def armstrong(number):
+def is_armstrong_number(number):
     
     list_num = []
     
@@ -7,4 +7,4 @@ def armstrong(number):
         list_num.append(int(x) ** len(str(number)))
     return sum(list_num) == number
 
-print(armstrong(153))
+print(is_armstrong_number(9926314))
