@@ -1,4 +1,9 @@
+
+############################################################################################################
+############################################### CISCO MERAKI ###############################################
+############################################################################################################
 POSTMAN Commands
+
 
 # Return a list of organization IDs, names, and URLs 
 GET https://api.meraki.com/api/v0/organizations
@@ -14,7 +19,6 @@ KEY: X-Cisco-Meraki-API-Key     VALUE: 6bec40cf957de430a6f1f2baa056b99a4fac9ea0
 GET https://api.meraki.com/api/v0/organizations/549236/networks/L_646829496481105433/devices
 KEY: Accept                     VALUE: application/json
 KEY: X-Cisco-Meraki-API-Key     VALUE: 6bec40cf957de430a6f1f2baa056b99a4fac9ea0
-
 
 
 cURL Commands
@@ -44,3 +48,35 @@ curl -X GET \
 > --url 'https://api.meraki.com/api/v0/organizations/549236/networks/L_646829496481105433/devices' \ 
 > -H 'X-Cisco-Meraki-API-Key: 6bec40cf957de430a6f1f2baa056b99a4fac9ea0' \
 > -H 'Accept: application/json'
+
+
+############################################################################################################
+############################################# CISCO DNA Center #############################################
+############################################################################################################
+
+POSTMAN Commands
+
+
+# Return DNA Center Basic Auth Token
+POST https://sandboxdnac.cisco.com/dna/system/api/v1/auth/token
+Username: devnetuser
+Password: Cisco123!
+
+# Return a list of devices managed by the Always On Cisco DNA Center Sandbox
+GET https://sandboxdnac.cisco.com/dna/intent/api/v1/network-device
+Key: X-Auth-Token
+Value: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDJjMGUyODE0NzEwYTIyZDFmN2UxNzIiLCJhdXRoU291cmNlIjoiaW50ZXJuYWwiLCJ0ZW5hbnROYW1lIjoiVE5UMCIsInJvbGVzIjpbIjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwOSJdLCJ0ZW5hbnRJZCI6IjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwMiIsImV4cCI6MTYyMjQwNTM5OCwiaWF0IjoxNjIyNDAxNzk4LCJqdGkiOiI0NDI3YTU2Yy00NWI3LTQ4OTEtYTlkMS05MWZjMDM2ZDExMzQiLCJ1c2VybmFtZSI6ImRldm5ldHVzZXIifQ.cUVVfAExecEw-noh2ZXQWpTcmLf7ZmmQMrowHgIo2xCRJS1-7NSIlQvIR53Sp4loGLtvzypw95hPkftGHAp22nu7sFMGg5ggq95Opwzqv9SJhNUvDwLzeUDCt4UnMrQaQXZ8BEFww_HuIegrlT4b3Z4_Ty80u4hVp13bekjte-88-Rnw26dl6BRIvOd97DKUXaWWPq80TEeSziSj_lEbCj_3kerCFctGP6LHpVjXQ1L0FiXy-A_y4rUZEB37Itya40S5g0D2HQH55hqSacYpY1VzOricp5v08s--fTUK7N2II9dFAyYPK5vgC8VTRMTCRqP1ms5z5jSM90nEAX3K8g
+
+
+cURL Commands
+
+
+# Return DNA Center Basic Auth Token
+curl -X POST \
+'https://sandboxdnac.cisco.com/dna/system/api/v1/auth/token' \
+-H 'Authorization: Basic ZGV2bmV0dXNlcjpDaXNjbzEyMyE=' # Base64 encoded user:password retrieved from base64 encoder
+
+# Return a list of devices managed by the Always On Cisco DNA Center Sandbox
+curl -X GET \
+https://sandboxdnac.cisco.com/dna/intent/api/v1/network-device \
+-H 'X-Auth-Token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDJjMGUyODE0NzEwYTIyZDFmN2UxNzIiLCJhdXRoU291cmNlIjoiaW50ZXJuYWwiLCJ0ZW5hbnROYW1lIjoiVE5UMCIsInJvbGVzIjpbIjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwOSJdLCJ0ZW5hbnRJZCI6IjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwMiIsImV4cCI6MTYyMjQwNTM5OCwiaWF0IjoxNjIyNDAxNzk4LCJqdGkiOiI0NDI3YTU2Yy00NWI3LTQ4OTEtYTlkMS05MWZjMDM2ZDExMzQiLCJ1c2VybmFtZSI6ImRldm5ldHVzZXIifQ.cUVVfAExecEw-noh2ZXQWpTcmLf7ZmmQMrowHgIo2xCRJS1-7NSIlQvIR53Sp4loGLtvzypw95hPkftGHAp22nu7sFMGg5ggq95Opwzqv9SJhNUvDwLzeUDCt4UnMrQaQXZ8BEFww_HuIegrlT4b3Z4_Ty80u4hVp13bekjte-88-Rnw26dl6BRIvOd97DKUXaWWPq80TEeSziSj_lEbCj_3kerCFctGP6LHpVjXQ1L0FiXy-A_y4rUZEB37Itya40S5g0D2HQH55hqSacYpY1VzOricp5v08s--fTUK7N2II9dFAyYPK5vgC8VTRMTCRqP1ms5z5jSM90nEAX3K8g'
