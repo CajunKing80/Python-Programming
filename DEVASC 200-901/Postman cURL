@@ -80,3 +80,24 @@ curl -X POST \
 curl -X GET \
 https://sandboxdnac.cisco.com/dna/intent/api/v1/network-device \
 -H 'X-Auth-Token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDJjMGUyODE0NzEwYTIyZDFmN2UxNzIiLCJhdXRoU291cmNlIjoiaW50ZXJuYWwiLCJ0ZW5hbnROYW1lIjoiVE5UMCIsInJvbGVzIjpbIjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwOSJdLCJ0ZW5hbnRJZCI6IjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwMiIsImV4cCI6MTYyMjQwNTM5OCwiaWF0IjoxNjIyNDAxNzk4LCJqdGkiOiI0NDI3YTU2Yy00NWI3LTQ4OTEtYTlkMS05MWZjMDM2ZDExMzQiLCJ1c2VybmFtZSI6ImRldm5ldHVzZXIifQ.cUVVfAExecEw-noh2ZXQWpTcmLf7ZmmQMrowHgIo2xCRJS1-7NSIlQvIR53Sp4loGLtvzypw95hPkftGHAp22nu7sFMGg5ggq95Opwzqv9SJhNUvDwLzeUDCt4UnMrQaQXZ8BEFww_HuIegrlT4b3Z4_Ty80u4hVp13bekjte-88-Rnw26dl6BRIvOd97DKUXaWWPq80TEeSziSj_lEbCj_3kerCFctGP6LHpVjXQ1L0FiXy-A_y4rUZEB37Itya40S5g0D2HQH55hqSacYpY1VzOricp5v08s--fTUK7N2II9dFAyYPK5vgC8VTRMTCRqP1ms5z5jSM90nEAX3K8g'
+
+
+############################################################################################################
+############################################### CISCO SD-WAN ###############################################
+############################################################################################################
+
+POSTMAN Commands
+
+https://sandboxsdwan.cisco.com:8443/j_security_check
+Key:            Value: 
+j_username:     devnetuser
+j_password:     RG!_Yw919_83
+
+
+cURL Commands
+
+
+curl -c - -X POST -k \ # -c - returns authorization cookie to the console; -k bypasses SSL certificate verification; 
+https://sandboxsdwan.cisco.com:8443/j_security_check \
+-H 'Content-Type: application/x-www-form-urlencoded' \
+-d 'j_username=devnetuser&j_password=RG!_Yw919_83'
