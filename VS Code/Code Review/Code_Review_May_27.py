@@ -50,32 +50,32 @@
 # HARD ============================================================================================
 # =================================================================================================
 
-print('\n=========================================== HARD ===========================================')
+# print('\n=========================================== HARD ===========================================')
 
-perfect = []
-abundant = []
-deficient = []
+# perfect = []
+# abundant = []
+# deficient = []
 
-for number in range(29): 
+# for number in range(29): 
        
-    aliquot_sum = 0
+#     aliquot_sum = 0
     
-    for x in range(1,number):
-        if (number % x == 0):
-            aliquot_sum = aliquot_sum + x
+#     for x in range(1,number):
+#         if (number % x == 0):
+#             aliquot_sum = aliquot_sum + x
 
-    if aliquot_sum == number:
-        perfect.append(number)
-    elif aliquot_sum > number:
-        abundant.append(number)
-    elif aliquot_sum < number: 
-        deficient.append(number)
+#     if aliquot_sum == number:
+#         perfect.append(number)
+#     elif aliquot_sum > number:
+#         abundant.append(number)
+#     elif aliquot_sum < number: 
+#         deficient.append(number)
 
-print (f'Perfect   : {perfect} \nAbundant  : {abundant} \nDeficient : {deficient}')
-print('============================================================================================\n')
+# print (f'Perfect   : {perfect} \nAbundant  : {abundant} \nDeficient : {deficient}')
+# print('============================================================================================\n')
 
-number = int()
-aliquot_sum = sum([x for x in range(1,number) if number % x == 0])
-newList = [perfect.append(number) if aliquot_sum == number else abundant.append(number) if aliquot_sum > number else deficient.append(number) for number in range(1,29)]
-print (f'Perfect   : {perfect} \nAbundant  : {abundant} \nDeficient : {deficient}')
-print('============================================================================================\n')
+# number = int()
+# aliquot_sum = sum([x for x in range(1,number) if number % x == 0])
+# newList = [perfect.append(number) if aliquot_sum == number else abundant.append(number) if aliquot_sum > number else deficient.append(number) for number in range(1,29)]
+# print (f'Perfect   : {perfect} \nAbundant  : {abundant} \nDeficient : {deficient}')
+# print('============================================================================================\n')
