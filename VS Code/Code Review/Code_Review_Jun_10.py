@@ -1,21 +1,80 @@
-####################################################################################################
-############################################### EASY ###############################################
-####################################################################################################
+############################################################################################################################################
+################################################################### EASY ###################################################################
+############################################################################################################################################
+
+
+
+############################################################################################################################################
+################################################################## MEDIUM ##################################################################
+############################################################################################################################################
 
 # Using cURL or Postman or Python, retrieve the API authentication token from the Cisco DNA Center Always On Sandbox
+# Cisco DevNet Sandbox Topology: https://devnetsandbox.cisco.com/RM/Diagram/Index/c3c949dc-30af-498b-9d77-4f1c07d835f9?diagramType=Topology
+# Cisco DevNet Sandbox for DNAC: https://sandboxdnac.cisco.com
+# username: devnetuser
+# password: Cisco123!
+# Per the documentation, this token is required to set as the X-Auth-Token HTTP Header for all API calls into the DNA Center
 
 import requests
 from requests.auth import HTTPBasicAuth
-# from dnac_config import DNAC, DNAC_PORT, DNAC_USER, DNAC_PASSWORD
+import json
 
 def get_auth_token():
     
     url = 'https://sandboxdnac.cisco.com/dna/system/api/v1/auth/token'       # Endpoint URL
     resp = requests.post(url, auth=HTTPBasicAuth(username='devnetuser', password='Cisco123!'))  # Make the POST Request
     token = resp.json()['Token']    # Retrieve the Token from the returned JSON
-    print("Token Retrieved: {}".format(token))  # Print out the Token
+    print("DNAC Token: {}".format(token))  # Print out the Token
     return token    # Create a return statement to send the token back for later use 
 
-print(__name__)
+print(__name__) 
 if __name__ == "__main__":
     get_auth_token()
+
+# {"Token":"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDJjMGUyODE0NzEwYTIyZDFmN2UxNzIiLCJhdXRoU291cmNlIjoiaW50ZXJuYWwiLCJ0ZW5hbnROYW1lIjoiVE5UMCIsInJvbGVzIjpbIjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwOSJdLCJ0ZW5hbnRJZCI6IjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwMiIsImV4cCI6MTYyMjg0MzU5MCwiaWF0IjoxNjIyODM5OTkwLCJqdGkiOiIyNDExZWFmYy01ODQ5LTQ5YWUtODIxYi05YzIyM2E4YWRjMDgiLCJ1c2VybmFtZSI6ImRldm5ldHVzZXIifQ.U6d33UroOiIRH4LQOBw7rYTitFvsx0TAvk0ubAnSWSsfjY9p7qDTqnKex5Wo_SjAym7-9_dqvucofWibA8qnJFxqHqGSU9SFOdcvBB-21uT5RKnfG9mQXEXeScHEfh13quEl6SjwhUFgiG9zG8HQokrwDcinom280Ty_2B1pxuVS6TGeBFptJ2qHCox-1nwJjIEqMKMmqPpmbkoYZIcFhYOxWm4s7O23p2qetLeMdrMguIk-xbtdz1O3dFMU4cP_MLcGffu0FSPKN35Xdt_lADAEhZym3fkpMeazfJBnPVzOHszoTVFNonl9Czpl_xX18CBD9GbhFatlLZCsqbht7w"}
+
+############################################################################################################################################
+################################################################### HARD ###################################################################
+############################################################################################################################################
+
+# Using the API token retrieved from the medium challenge, return teh list of network devices by name type and last update DTG
+
+import requests
+
+headers = {
+    'X-Auth-Token': 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDJjMGUyODE0NzEwYTIyZDFmN2UxNzIiLCJhdXRoU291cmNlIjoiaW50ZXJuYWwiLCJ0ZW5hbnROYW1lIjoiVE5UMCIsInJvbGVzIjpbIjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwOSJdLCJ0ZW5hbnRJZCI6IjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwMiIsImV4cCI6MTYyMjg0MzU5MCwiaWF0IjoxNjIyODM5OTkwLCJqdGkiOiIyNDExZWFmYy01ODQ5LTQ5YWUtODIxYi05YzIyM2E4YWRjMDgiLCJ1c2VybmFtZSI6ImRldm5ldHVzZXIifQ.U6d33UroOiIRH4LQOBw7rYTitFvsx0TAvk0ubAnSWSsfjY9p7qDTqnKex5Wo_SjAym7-9_dqvucofWibA8qnJFxqHqGSU9SFOdcvBB-21uT5RKnfG9mQXEXeScHEfh13quEl6SjwhUFgiG9zG8HQokrwDcinom280Ty_2B1pxuVS6TGeBFptJ2qHCox-1nwJjIEqMKMmqPpmbkoYZIcFhYOxWm4s7O23p2qetLeMdrMguIk-xbtdz1O3dFMU4cP_MLcGffu0FSPKN35Xdt_lADAEhZym3fkpMeazfJBnPVzOHszoTVFNonl9Czpl_xX18CBD9GbhFatlLZCsqbht7w',
+}
+
+response = requests.get('https://sandboxdnac.cisco.com/dna/intent/api/v1/network-device', headers=headers)
+
+from dnacentersdk import api
+
+DNAC = api.DNACenterAPI(username="devnetuser", 
+            password="Cisco123!", 
+            base_url="https://sandboxdnac.cisco.com")
+print ()
+
+DEVICES = DNAC.devices.get_device_list()
+
+print ('-'*95)
+print ('{0:25s}{1:1}{2:45s}{3:1}{4:15s}'.format("Device Name", "|", "Device Type", "|", "Last Updated"))
+print ('-'*95)
+
+for DEVICE in DEVICES.response: 
+    print ('{0:25s}{1:1}{2:45s}{3:1}{4:15s}'.format(DEVICE.hostname, "|", DEVICE.type, "|", DEVICE.lastUpdated))
+
+print ('-'*95)
+
+
+# CLIENTS = DNAC.clients.get_overall_client_health(timestamp="timestamp")
+
+# print ('{0:25s}{1:1}{2:45s}{3:1}{4:15s}'.format("Client Category", "|", "Number of Clients", "|", "Client Score"))
+
+# print ('-'*95)
+
+# for CLIENT in CLIENTS.response: 
+#     for score in CLIENT.scoreDetail:
+#         print ('{0:25s}{1:1}{2:<45d}{3:1}{4:<15d}'.format(score.scoreCategory.value, "|", score.clientCount, "|", score.scoreValue))
+
+# print ('-'*95)
+# print ()
