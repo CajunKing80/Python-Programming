@@ -16,5 +16,6 @@ def get_auth_token():
     print("Token Retrieved: {}".format(token))  # Print out the Token
     return token    # Create a return statement to send the token back for later use 
 
+print(__name__)
 if __name__ == "__main__":
     get_auth_token()
