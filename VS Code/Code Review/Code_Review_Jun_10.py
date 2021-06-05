@@ -2,13 +2,18 @@
 ################################################################### EASY ###################################################################
 ############################################################################################################################################
 
+# Write a simple Python program to return the name variable within your main program. 
 
+print(f"\n{'='*100}  EASY  {'='*100}\n")
+print("The name of my current program is set to: {}" .format(__name__))
+print()
+print('='*208)
 
 ############################################################################################################################################
 ################################################################## MEDIUM ##################################################################
 ############################################################################################################################################
 
-# Using cURL or Postman or Python, retrieve the API authentication token from the Cisco DNA Center Always On Sandbox
+# Write a Python program to retrieve the API authentication token from the Cisco DNA Center Always On Sandbox
 # Cisco DevNet Sandbox Topology: https://devnetsandbox.cisco.com/RM/Diagram/Index/c3c949dc-30af-498b-9d77-4f1c07d835f9?diagramType=Topology
 # Cisco DevNet Sandbox for DNAC: https://sandboxdnac.cisco.com
 # username: devnetuser
@@ -21,13 +26,16 @@ import json
 
 def get_auth_token():
     
-    url = 'https://sandboxdnac.cisco.com/dna/system/api/v1/auth/token'       # Endpoint URL
-    resp = requests.post(url, auth=HTTPBasicAuth(username='devnetuser', password='Cisco123!'))  # Make the POST Request
-    token = resp.json()['Token']    # Retrieve the Token from the returned JSON
-    print("DNAC Token: {}".format(token))  # Print out the Token
-    return token    # Create a return statement to send the token back for later use 
+    url = 'https://sandboxdnac.cisco.com/dna/system/api/v1/auth/token'
+    resp = requests.post(url, auth=HTTPBasicAuth(username='devnetuser', password='Cisco123!'))
+    token = resp.json()['Token']
+    print(f"\n{'='*100} MEDIUM {'='*100}\n")
+    print("DNAC Token: {}".format(token))
+    print()
+    print('='*209)
+    return token
 
-print(__name__) 
+
 if __name__ == "__main__":
     get_auth_token()
 
@@ -52,29 +60,18 @@ from dnacentersdk import api
 DNAC = api.DNACenterAPI(username="devnetuser", 
             password="Cisco123!", 
             base_url="https://sandboxdnac.cisco.com")
-print ()
+
+print(f"\n{'='*100}  HARD  {'='*100}\n")
 
 DEVICES = DNAC.devices.get_device_list()
 
-print ('-'*95)
-print ('{0:25s}{1:1}{2:45s}{3:1}{4:15s}'.format("Device Name", "|", "Device Type", "|", "Last Updated"))
-print ('-'*95)
+print('-'*95)
+print('{0:25s}{1:1}{2:45s}{3:1}{4:15s}'.format("Device Name", "|", "Device Type", "|", "Last Updated"))
+print('-'*95)
 
 for DEVICE in DEVICES.response: 
     print ('{0:25s}{1:1}{2:45s}{3:1}{4:15s}'.format(DEVICE.hostname, "|", DEVICE.type, "|", DEVICE.lastUpdated))
 
-print ('-'*95)
-
-
-# CLIENTS = DNAC.clients.get_overall_client_health(timestamp="timestamp")
-
-# print ('{0:25s}{1:1}{2:45s}{3:1}{4:15s}'.format("Client Category", "|", "Number of Clients", "|", "Client Score"))
-
-# print ('-'*95)
-
-# for CLIENT in CLIENTS.response: 
-#     for score in CLIENT.scoreDetail:
-#         print ('{0:25s}{1:1}{2:<45d}{3:1}{4:<15d}'.format(score.scoreCategory.value, "|", score.clientCount, "|", score.scoreValue))
-
-# print ('-'*95)
-# print ()
+print('-'*95)
+print()
+print('='*208)
