@@ -2215,3 +2215,214 @@ print(response)
     ####################################################################################################
     ############################  LAB 18 Re-factoring Code with Functions  #############################
     ####################################################################################################
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+devices = ['csr1', 'csr2', 'csr3']
+
+for device in devices:
+    print("Connecting to device | {}".format(device))
+
+    net_device = ConnectHandler(host=device, username='ntc', password='ntc123', device_type='cisco_ios')
+
+    print("Saving configuration | {}".format(device))
+
+    net_device.send_command("wr mem")
+
+    print("Backing up configuration | {}".format(device))
+
+    net_device.send_command("term len 0")
+    config = net_device.send_command("show run")
+
+    print("Writing config to file | {}\n".format(device))
+
+    with open("/home/ntc/scripts/configs/{}.cfg".format(device), "w") as config_file:
+        config_file.write(config)
+
+    net_device.disconnect()
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+def main():
+    devices = ['csr1', 'csr2', 'csr3']
+
+    for device in devices:
+        print("Connecting to device | {}".format(device))
+
+        net_device = ConnectHandler(host=device, username='ntc', password='ntc123', device_type='cisco_ios')
+
+        print("Saving configuration | {}".format(device))
+
+        net_device.send_command("wr mem")
+
+        print("Backing up configuration | {}".format(device))
+
+        net_device.send_command("term len 0")
+        config = net_device.send_command("show run")
+
+        print("Writing config to file | {}\n".format(device))
+
+        with open("/home/ntc/scripts/configs/{}.cfg".format(device), "w") as config_file:
+            config_file.write(config)
+
+        net_device.disconnect()
+
+main()
+
+def connect_to_device(hostname):
+    print("Connecting to device | {}".format(hostname))
+    device = ConnectHandler(host=hostname, username='ntc', password='ntc123', device_type='cisco_ios')
+
+    return device
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+def connect_to_device(hostname):
+    print("Connecting to device | {}".format(hostname))
+    net_d = ConnectHandler(host=hostname, username='ntc', password='ntc123', device_type='cisco_ios')
+
+    return net_d
+
+def main():
+    devices = ['csr1', 'csr2', 'csr3']
+
+    for device in devices:
+
+        net_device = connect_to_device(device)
+
+        print("Saving configuration | {}".format(device))
+        net_device.send_command("wr mem")
+
+        print("Backing up configuration | {}".format(device))
+
+        net_device.send_command("term len 0")
+        config = net_device.send_command("show run")
+
+        print("Writing config to file | {}\n".format(device))
+
+        with open("/home/ntc/scripts/configs/{}.cfg".format(device), "w") as config_file:
+            config_file.write(config)
+
+        net_device.disconnect()
+
+main()
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+def connect_to_device(hostname):
+    print("Connecting to device | {}".format(hostname))
+    net_d = ConnectHandler(host=hostname, username='ntc', password='ntc123', device_type='cisco_ios')
+
+    return net_d
+
+def save_config(device, hostname):
+    print("Saving configuration | {}".format(hostname))
+    device.send_command("wr mem")
+
+def backup_config(device, hostname):
+    pass
+
+def write_to_file():
+    pass
+
+def main():
+    devices = ['csr1', 'csr2', 'csr3']
+
+    for device in devices:
+        net_device = connect_to_device(device)
+
+        save_config(net_device, device)
+
+        print("Backing up configuration | {}".format(device))
+        net_device.send_command("term len 0")
+        config = net_device.send_command("show run")
+
+        print("Writing config to file | {}\n".format(device))
+        with open("/home/ntc/scripts/configs/{}.cfg".format(device), "w") as config_file:
+            config_file.write(config)
+
+        net_device.disconnect()
+
+main()
+
+def backup_config(device, hostname):
+    print("Backing up configuration | {}".format(hostname))
+    device.send_command("term len 0")
+    config = device.send_command("show run")
+
+    return config
+
+def main():
+    devices = ['csr1', 'csr2', 'csr3']
+
+    for device in devices:
+        net_device = connect_to_device(device)
+        save_config(net_device, device)
+
+        config = backup_config(net_device, device)
+
+        print("Writing config to file | {}\n".format(device))
+        with open("/home/ntc/scripts/configs/{}.cfg".format(device), "w") as config_file:
+            config_file.write(config)
+
+        net_device.disconnect()
+
+def write_to_file(hostname, show_run):
+    print("Writing config to file | {}\n".format(hostname))
+    with open("/home/ntc/scripts/configs/{}.cfg".format(hostname), "w") as config_file:
+        config_file.write(show_run)
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+def connect_to_device(hostname):
+    print("Connecting to device | {}".format(hostname))
+    net_d = ConnectHandler(host=hostname, username='ntc', password='ntc123', device_type='cisco_ios')
+
+    return net_d
+
+def save_config(device, hostname):
+    print("Saving configuration | {}".format(hostname))
+    device.send_command("wr mem")
+
+def backup_config(device, hostname):
+    print("Backing up configuration | {}".format(hostname))
+    device.send_command("term len 0")
+    config = device.send_command("show run")
+
+    return config
+
+def write_to_file(hostname, show_run):
+    print("Writing config to file | {}\n".format(hostname))
+    with open("/home/ntc/scripts/configs/{}.cfg".format(hostname), "w") as config_file:
+        config_file.write(show_run)
+
+def main():
+    devices = ['csr1', 'csr2', 'csr3']
+
+    for device in devices:
+        net_device = connect_to_device(device)
+
+        save_config(net_device, device)
+
+        config = backup_config(net_device, device)
+
+        write_to_file(device, config)
+
+        net_device.disconnect()
+
+main()
+    
+    ####################################################################################################
+    ##################################  LAB 19 Passing in User Input  ##################################
+    ####################################################################################################
+
