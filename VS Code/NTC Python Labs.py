@@ -1289,4 +1289,929 @@ ntc@ntc-training:scripts$ python print_facts.py
     ################################  LAB 12 Getting Started with Netmiko  #############################
     ####################################################################################################
 
+oot@ntc-training:~$ ping csr1 -c 3
+PING csr1 (172.21.0.6) 56(84) bytes of data.
+64 bytes from csr1.ntc-training (172.21.0.6): icmp_seq=1 ttl=64 time=0.053 ms
+64 bytes from csr1.ntc-training (172.21.0.6): icmp_seq=2 ttl=64 time=0.059 ms
+64 bytes from csr1.ntc-training (172.21.0.6): icmp_seq=3 ttl=64 time=0.073 ms
+
+ntc@ntc-training:ntc$ cd files
+ntc@ntc-training:files$
+
+>>> from netmiko import ConnectHandler
+>>>
+>>> platform = 'cisco_ios'
+>>> host = 'csr1'
+>>> username = 'ntc'
+>>> password = 'ntc123'
+>>>
+>>> device = ConnectHandler(device_type=platform, ip=host, username=username, password=password)
+>>>
+>>>
+
+>>> dir(device)
+['__class__', '__delattr__', '__dict__', '__doc__', '__enter__', '__exit__',
+'__format__', '__getattribute__', '__hash__', '__init__', '__module__',
+__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_autodetect_fs',
+'_build_ssh_client', '_connect_params_dict', '_lock_netmiko_session',
+'_modify_connection_params', '_read_channel', '_read_channel_expect',
+'_read_channel_timing', '_sanitize_output', '_session_locker',
+'_test_channel_read', '_timeout_exceeded', '_unlock_netmiko_session',
+'_use_ssh_config', '_write_channel', 'allow_agent', 'alt_host_keys',
+'alt_key_file', 'ansi_escape_codes', 'base_prompt', 'check_config_mode',
+'check_enable_mode', 'cleanup', 'clear_buffer', 'commit', 'config_mode',
+'device_type', 'disable_paging', 'disconnect', 'enable', 'establish_connection'
+, 'exit_config_mode', 'exit_enable_mode', 'find_prompt', 'global_delay_factor',
+ 'host', 'is_alive', 'keepalive', 'key_file', 'key_policy', 'normalize_cmd',
+ 'normalize_linefeeds', 'password', 'port', 'protocol', 'read_channel', '
+'read_until_pattern', 'read_until_prompt', 'read_until_prompt_or_pattern',
+ 'remote_conn', 'remote_conn_pre', 'secret', 'select_delay_factor',
+ 'send_command', 'send_command_expect', 'send_command_timing',
+ 'send_config_from_file', 'send_config_set', 'session_preparation',
+ 'session_timeout', 'set_base_prompt', 'set_terminal_width',
+ 'special_login_handler', 'ssh_config_file', 'strip_ansi_escape_codes',
+ 'strip_backspaces', 'strip_command', 'strip_prompt', 'system_host_keys',
+ 'telnet_login', 'timeout', 'use_keys', 'username', 'verbose', 'write_channel']
+>>>
+
+>>> device.is_alive()
+True
+>>>
+
+>>> help(device.is_alive)
+Help on method is_alive in module netmiko.base_connection:
+
+is_alive(self) method of netmiko.cisco.cisco_ios.CiscoIosBase instance
+    Returns a boolean flag with the state of the connection.
+(END)
+
+>>> output = device.send_command('show version')
+>>>
+>>> print(output)
+Cisco IOS XE Software, Version 16.06.02
+Cisco IOS Software [Everest], Virtual XE Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Version 16.6.2, RELEASE SOFTWARE (fc2)
+Technical Support: http://www.cisco.com/techsupport
+Copyright (c) 1986-2017 by Cisco Systems, Inc.
+Compiled Wed 01-Nov-17 07:24 by mcpre
+
+
+Cisco IOS-XE software, Copyright (c) 2005-2017 by cisco Systems, Inc.
+All rights reserved.  Certain components of Cisco IOS-XE software are
+licensed under the GNU General Public License ("GPL") Version 2.0.  The
+software code licensed under GPL Version 2.0 is free software that comes
+with ABSOLUTELY NO WARRANTY.  You can redistribute and/or modify such
+GPL code under the terms of GPL Version 2.0.  For more details, see the
+documentation or "License Notice" file accompanying the IOS-XE software,
+or the applicable URL provided on the flyer accompanying the IOS-XE
+software.
+
+
+ROM: IOS-XE ROMMON
+
+csr1 uptime is 27 minutes
+Uptime for this control processor is 32 minutes
+System returned to ROM by reload
+System image file is "bootflash:packages.conf"
+Last reload reason: reload
+
+
+
+This product contains cryptographic features and is subject to United
+States and local country laws governing import, export, transfer and
+use. Delivery of Cisco cryptographic products does not imply
+third-party authority to import, export, distribute or use encryption.
+Importers, exporters, distributors and users are responsible for
+compliance with U.S. and local country laws. By using this product you
+agree to comply with applicable laws and regulations. If you are unable
+to comply with U.S. and local laws, return this product immediately.
+
+A summary of U.S. laws governing Cisco cryptographic products may be found at:
+http://www.cisco.com/wwl/export/crypto/tool/stqrg.html
+
+If you require further assistance please contact us by sending email to
+export@cisco.com.
+
+License Level: ax
+License Type: Default. No valid license found.
+Next reload license Level: ax
+
+cisco CSR1000V (VXE) processor (revision VXE) with 2190795K/3075K bytes of memory.
+Processor board ID 9KIBQAQ3OPE
+4 Gigabit Ethernet interfaces
+32768K bytes of non-volatile configuration memory.
+3984708K bytes of physical memory.
+7774207K bytes of virtual hard disk at bootflash:.
+0K bytes of WebUI ODM Files at webui:.
+
+Configuration register is 0x2102
+
+>>>
+
+>>> output = device.send_command('show version | include register')
+>>>
+>>> print(output)
+Configuration register is 0x2102
+>>>
+
+>>> '0x2102' in output
+True
+>>>
+
+>>> '0x2142' not in output
+True
+>>>
+
+>>> output = device.send_command('wr mem')
+>>>
+>>> print(output)
+Building configuration...
+[OK]
+>>>
+
+>>> output = device.send_command('ping 10.0.0.15')
+>>>
+>>> print(output)
+Type escape sequence to abort.
+Sending 5, 100-byte ICMP Echos to 10.0.0.15, timeout is 2 seconds:
+!!!!!
+Success rate is 100 percent (5/5), round-trip min/avg/max = 1/1/1 ms
+>>>
+
+>>> print(output)
+config term
+Enter configuration commands, one per line.  End with CNTL/Z.
+csr1(config)#interface Loopback100
+csr1(config-if)#ip address 10.200.1.20 255.255.255.0
+csr1(config-if)#end
+csr1#
+>>>
+
+>>> help(device.send_config_set)
+
+Help on method send_config_set in module netmiko.base_connection:
+
+send_config_set(self, config_commands=None, exit_config_mode=True, **kwargs) method of netmiko.cisco.cisco_nxos_ssh.CiscoNxosSSH instance
+    Send group of configuration commands down the SSH channel.
+
+    config_commands is an iterable containing all of the configuration commands.
+    The commands will be executed one after the other.
+
+    Automatically exits/enters configuration mode.
+
+    **kwargs will allow passing of all the arguments to send_command
+    strip_prompt and strip_command will be set to False if not explicitly set in
+    the method call.
+(END)
+
+>>> snmp_commands = ['snmp-server community ntclab RO', 'snmp-server community ntcrw RW']
+>>>
+>>> response = device.send_config_set(snmp_commands)
+>>>
+>>> verify = device.send_command('show run | inc snmp-server community')
+>>>
+>>> print(verify)
+snmp-server community ntclab RO
+snmp-server community ntcrw RW
+>>>
+
+>>> import os
+>>>
+>>> os.system('ls /home/ntc/files/config.txt')
+/home/ntc/files/config.txt
+0
+
+>>> os.system('cat /home/ntc/files/config.txt')
+!
+snmp-server community supersecret RW
+snmp-server community notprivate RO
+!
+interface Loopback101
+ ip address 10.9.88.1 255.255.255.0
+!
+0
+
+>>> print(output)
+config term
+Enter configuration commands, one per line.  End with CNTL/Z.
+csr1(config)#!
+csr1(config)#snmp-server community supersecret RW
+csr1(config)#snmp-server community notprivate RO
+csr1(config)#!
+csr1(config)#interface Loopback101
+csr1(config-if)# ip address 10.9.88.1 255.255.255.0
+csr1(config-if)#!
+csr1(config-if)#end
+csr1#
+>>>
+
+>>> device.config_mode()
+u'config term\nEnter configuration commands, one per line.  End with CNTL/Z.\ncsr1(config)#'
+>>>
+
+>>> data = device.config_mode()
+>>> data = device.send_command_timing('interface Gigabit3')
+>>>
+
+>>> print(device.find_prompt())
+csr1(config-if)#
+>>>
+
+>>> device.exit_config_mode()
+u'end\ncsr1#'
+>>>
+
+>>> device.disconnect()
+>>>
+
+>>> device.is_alive()
+False
+>>>
+
+>>> device.establish_connection()
+u''
+>>>
+
+>>> device.disconnect()
+>>>
     
+    ####################################################################################################
+    #########################################  LAB 13 Challenge  #######################################
+    ####################################################################################################
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+print("Connecting to device | CSR1")
+
+csr1 = ConnectHandler(host='csr1', username='ntc', password='ntc123', device_type='cisco_ios')
+
+print("Saving configuration | CSR1")
+
+csr1.send_command("wr mem")
+
+print("Backing up configuration | CSR1")
+
+csr1.send_command("term len 0")
+csr1_config = csr1.send_command("show run")
+
+print("Writing config to file | CSR1\n")
+
+with open("/home/ntc/scripts/configs/csr1.cfg", "w") as config_file:
+    config_file.write(csr1_config)
+
+print("Connecting to device | CSR2")
+
+csr2 = ConnectHandler(host='csr2', username='ntc', password='ntc123', device_type='cisco_ios')
+
+print("Saving configuration | CSR2")
+
+csr2.send_command("wr mem")
+
+print("Backing up configuration | CSR2")
+
+csr2.send_command("term len 0")
+csr2_config = csr1.send_command("show run")
+
+print("Writing config to file | CSR2\n")
+
+with open("/home/ntc/scripts/configs/csr2.cfg", "w") as config_file:
+    config_file.write(csr2_config)
+    
+    ####################################################################################################
+    ########################################  LAB 14 Conditionals  #####################################
+    ####################################################################################################
+
+nxos-spine10
+
+>>> hostname != 'nxos-spine2'
+True
+>>>
+
+>>> "eth" in "Ethernet2/4"
+False
+>>>
+
+>>> hostname == "nxos-spine2" or hostname == "nxos-spine10"
+True
+>>>
+
+>>> vendor = ""
+>>>
+
+>>> bool(vendor)
+False
+>>>
+
+>>> vendors = ['cisco']
+>>>
+>>> bool(vendors)
+True
+>>>
+
+>>> hostname = "nxos-spine1"
+>>>
+>>> if hostname == "nxos-spine1":
+...     print("The hostname is correct.")
+...
+The hostname is correct.
+>>>
+
+>>> platforms = ['nexus', 'catalyst', 'asa', 'csr', 'aci']
+>>>
+>>> if 'catalyst' in platforms:
+...     print("Catalyst has been found in the network.")
+...
+Catalyst has been found in the network.
+>>>
+
+>>> supported_platforms = ['nexus', 'catalyst']
+>>>
+>>> for platform in platforms:
+...     if platform in supported_platforms:
+...         print("Platform {}  -- SUPPORTED".format(platform))
+...
+...
+Platform nexus  -- SUPPORTED
+Platform catalyst  -- SUPPORTED
+>>>
+
+>>> supported_platforms = ['nexus', 'catalyst']
+>>>
+>>> for platform in platforms:
+...     if platform in supported_platforms:
+...         print("Platform {}  -- SUPPORTED".format(platform))
+...
+...
+Platform nexus  -- SUPPORTED
+Platform catalyst  -- SUPPORTED
+>>>
+
+>>> for platform in platforms:
+...     if platform in supported_platforms:
+...         print("Platform {}  -- SUPPORTED".format(platform))
+...     else:
+...         print("Platform {}  -- NOT SUPPORTED".format(platform))
+...
+Platform nexus  -- SUPPORTED
+Platform catalyst  -- SUPPORTED
+Platform asa  -- NOT SUPPORTED
+Platform csr  -- NOT SUPPORTED
+Platform aci  -- NOT SUPPORTED
+>>>
+
+>>> vlans = [{'name': 'web', 'id': 10}, {'name': 'app', 'id': 20}, {'name': 'db', 'id': 30}]
+>>>
+
+>>> for item in vlans:
+...     if item['id'] == 20:
+...         print("VLAN NAME: {}".format(item['name']))
+...
+VLAN NAME: app
+>>>
+
+>>> for item in vlans:
+...   vlan_id = item['id']
+...   name = item['name']
+...   print("vlan {}".format(vlan_id))
+...   print(" name {}".format(name))
+...
+vlan 10
+ name web
+vlan 20
+ name app
+vlan 30
+ name db
+>>>
+
+>>> vlans[1].pop('name')
+'app'
+>>>
+
+>>> for item in vlans:
+...   vlan_id = item['id']
+...   name = item.get('name')
+...   print("vlan {}".format(vlan_id))
+...   if name:
+...     print(" name {}".format(name))
+...
+vlan 10
+ name web
+vlan 20
+vlan 30
+ name db
+>>>
+
+>>> devices = [{'platform': 'nexus', 'hostname': 'nycr01'}, {'platform': 'catalyst', 'hostname': 'nycsw02'}, {'platform': 'mx', 'hostname': 'nycr03'}, {'platform': 'srx', 'hostname': 'nycfw01'}, {'platform': 'asa', 'hostname': 'nycfw02'}]
+>>> print(devices)
+[{'platform': 'nexus', 'hostname': 'nycr01'}, {'platform': 'catalyst', 'hostname': 'nycsw02'}, {'platform': 'mx', 'hostname': 'nycr03'}, {'platform': 'srx', 'hostname': 'nycfw01'}, {'platform': 'asa', 'hostname': 'nycfw02'}]
+>>>
+
+>>> for item in devices:
+...     platform = item.get('platform')
+...     if platform == "nexus":
+...         print("Vendor is Cisco")
+...     elif platform == "catalyst":
+...         print("Vendor is Cisco")
+...     elif platform == "aci":
+...         print("Vendor is Cisco")
+...     elif platform == "srx" or platform == "mx":
+...         print("Vendor is Juniper")
+...     else:
+...         print("Unknown Vendor")
+...
+Vendor is Cisco
+Vendor is Cisco
+Vendor is Juniper
+Vendor is Juniper
+Unknown Vendor
+>>>
+
+>>> cisco_platforms = ['catalyst', 'nexus', 'aci']
+>>> juniper_platforms = ['mx', 'srx']
+>>>
+>>> for item in devices:
+...     platform = item.get('platform')
+...     if platform in cisco_platforms:
+...         print("Vendor is Cisco")
+...     elif platform in juniper_platforms:
+...         print("Vendor is Juniper")
+...     else:
+...         print("Unknown Vendor")
+...
+Vendor is Cisco
+Vendor is Cisco
+Vendor is Juniper
+Vendor is Juniper
+Unknown Vendor
+>>>
+    
+    ####################################################################################################
+    ############################################  LAB 15 Loops  ########################################
+    ####################################################################################################
+
+>>> commands = ['interface Eth2/1', 'description Configured by Python', 'speed 100', 'duplex full']
+>>>
+
+>>> for command in commands:
+...      print(command)
+...
+interface Eth2/1
+description Configured by Python
+speed 100
+duplex full
+>>>
+
+>>> for item in commands:
+...     print(item)
+...
+interface Eth2/1
+description Configured by Python
+speed 100
+duplex full
+>>>
+
+Connecting to device | csr1
+
+>>> routers = ['csr1', 'csr2', 'csr3']
+>>>
+>>> for router in routers:
+...     print("Connecting to device | {}".format(router))
+...
+Connecting to device | csr1
+Connecting to device | csr2
+Connecting to device | csr3
+>>>
+
+>>> interface = {}
+>>> interface['duplex'] = 'full'
+>>> interface['speed'] = '100'
+>>> interface['description'] = 'Configured by Python'
+>>>
+>>> print(interface)
+{'duplex': 'full', 'speed': '100', 'description': 'Configured by Python'}
+>>>
+
+>>> for key in interface.keys():
+...      print(key)
+...
+duplex
+speed
+description
+>>>
+
+>>> for value in interface.values():
+...     print(value)
+...
+full
+100
+Configured by Python
+>>>
+
+
+>>> for key, value in interface.items():
+...     print(key, '--->', value)
+...
+duplex ---> full
+speed ---> 100
+description ---> Configured by Python
+>>>
+
+>>> for feature, configured_value in interface.items():
+...     print(feature, '--->', configured_value)
+...
+duplex ---> full
+speed ---> 100
+description ---> Configured by Python
+>>>
+
+>>> vlan10 = {'name': 'web', 'id': '10'}
+>>> vlan20 = {'name': 'app', 'id': '20'}
+>>> vlan30 = {'name': 'db', 'id': '30'}
+
+
+>>> vlans = [vlan10, vlan20, vlan30]
+>>>
+
+>>> print(vlans)
+[{'name': 'web', 'id': '10'}, {'name': 'app', 'id': '20'}, {'name': 'db', 'id': '30'}]
+>>>
+
+>>> import json
+>>>
+>>> print(json.dumps(vlans, indent=4))
+[
+    {
+        "name": "web",
+        "id": "10"
+    },
+    {
+        "name": "app",
+        "id": "20"
+    },
+    {
+        "name": "db",
+        "id": "30"
+    }
+]
+>>>
+
+>>> for vlan in vlans:
+...     print(vlan)
+...
+{'name': 'web', 'id': '10'}
+{'name': 'app', 'id': '20'}
+{'name': 'db', 'id': '30'}
+>>>
+
+>>> for vlan in vlans:
+...     print(vlan)
+...     print(type(vlan))
+...
+{'name': 'web', 'id': '10'}
+<class 'dict'>
+{'name': 'app', 'id': '20'}
+<class 'dict'>
+{'name': 'db', 'id': '30'}
+<class 'dict'>
+>>>
+
+vlan 10
+ name web
+vlan 20
+ name app
+vlan 30
+ name db
+
+>>> for vlan in vlans:
+...     print("vlan {}".format(vlan['id']))
+...     print(" name {}".format(vlan['name']))
+...
+vlan 10
+ name web
+vlan 20
+ name app
+vlan 30
+ name db
+>>>
+    
+    ####################################################################################################
+    ##############################  LAB 16 Re-factoring Code Using Loops  ##############################
+    ####################################################################################################
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+print("Connecting to device | CSR1")
+
+csr1 = ConnectHandler(host='csr1', username='ntc', password='ntc123', device_type='cisco_ios')
+
+print("Saving configuration | CSR1")
+
+csr1.send_command("wr mem")
+
+print("Backing up configuration | CSR1")
+
+csr1.send_command("term len 0")
+csr1_config = csr1.send_command("show run")
+
+print("Writing config to file | CSR1\n")
+
+with open("/home/ntc/scripts/configs/csr1.cfg", "w") as config_file:
+    config_file.write(csr1_config)
+
+print("Connecting to device | CSR2")
+
+csr2 = ConnectHandler(host='csr2', username='ntc', password='ntc123', device_type='cisco_ios')
+
+print("Saving configuration | CSR2")
+
+csr2.send_command("wr mem")
+
+print("Backing up configuration | CSR2")
+
+csr2.send_command("term len 0")
+csr2_config = csr1.send_command("show run")
+
+print("Writing config to file | CSR2\n")
+
+with open("/home/ntc/scripts/configs/csr2.cfg", "w") as config_file:
+    config_file.write(csr2_config)
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+devices = ['csr1']
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+devices = ['csr1']
+
+for device in devices:
+    print("Connecting to device | {}".format(device))
+    csr1 = ConnectHandler(host=device, username='ntc', password='ntc123', device_type='cisco_ios')
+    print("Saving configuration | {}".format(device))
+    csr1.send_command("wr mem")
+    print("Backing up configuration | {}".format(device))
+    csr1.send_command("term len 0")
+    csr1_config = csr1.send_command("show run")
+    print("Writing config to file | {}\n".format(device))
+    with open("/home/ntc/files/scripts/configs/{}.cfg".format(device), "w") as config_file:
+        config_file.write(csr1_config)
+    print("Connecting to device | CSR2")
+    csr2 = ConnectHandler(host='csr2', username='ntc', password='ntc123', device_type='cisco_ios')
+    print("Saving configuration | CSR2")
+    csr2.send_command("wr mem")
+    print("Backing up configuration | CSR2")
+    csr2.send_command("term len 0")
+    csr2_config = csr1.send_command("show run")
+    print("Writing config to file | CSR2\n")
+    with open("/home/ntc/files/scripts/configs/csr2.cfg", "w") as config_file:
+        config_file.write(csr2_config)
+
+
+ntc@ntc-training:scripts$ python backupv2.py
+Connecting to device | csr1
+Saving configuration | csr1
+Backing up configuration | csr1
+Writing config to file | csr1
+
+Connecting to device | CSR2
+Saving configuration | CSR2
+Backing up configuration | CSR2
+Writing config to file | CSR2
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+devices = ['csr1', 'csr2']
+
+for device in devices:
+    print("Connecting to device | {}".format(device))
+    csr1 = ConnectHandler(host=device, username='ntc', password='ntc123', device_type='cisco_ios')
+    print("Saving configuration | {}".format(device))
+    csr1.send_command("wr mem")
+    print("Backing up configuration | {}".format(device))
+    csr1.send_command("term len 0")
+    csr1_config = csr1.send_command("show run")
+    print("Writing config to file | {}\n".format(device))
+    with open("/home/ntc/files/scripts/configs/{}.cfg".format(device), "w") as config_file:
+        config_file.write(csr1_config)
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+devices = ['csr1', 'csr2']
+
+for device in devices:
+    print("Connecting to device | {}".format(device))
+    net_device = ConnectHandler(host=device, username='ntc', password='ntc123', device_type='cisco_ios')
+    print("Saving configuration | {}".format(device))
+    net_device.send_command("wr mem")
+    print("Backing up configuration | {}".format(device))
+    net_device.send_command("term len 0")
+    config = net_device.send_command("show run")
+    print("Writing config to file | {}\n".format(device))
+    with open("/home/ntc/files/scripts/configs/{}.cfg".format(device), "w") as config_file:
+        config_file.write(config)
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+devices = ['csr1', 'csr2']
+
+for device in devices:
+    print("Connecting to device | {}".format(device))
+    net_device = ConnectHandler(host=device, username='ntc', password='ntc123', device_type='cisco_ios')
+    print("Saving configuration | {}".format(device))
+    net_device.send_command("wr mem")
+    print("Backing up configuration | {}".format(device))
+    net_device.send_command("term len 0")
+    config = net_device.send_command("show run")
+    print("Writing config to file | {}\n".format(device))
+    with open("/home/ntc/files/scripts/configs/{}.cfg".format(device), "w") as config_file:
+        config_file.write(config)
+
+devices = ['csr1', 'csr2' ,'csr3']
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+devices = ['csr1', 'csr2', 'csr3']
+
+for device in devices:
+    print("Connecting to device | {}".format(device))
+    net_device = ConnectHandler(host=device, username='ntc', password='ntc123', device_type='cisco_ios')
+    print("Saving configuration | {}".format(device))
+    net_device.send_command("wr mem")
+    print("Backing up configuration | {}".format(device))
+    net_device.send_command("term len 0")
+    config = net_device.send_command("show run")
+    print("Writing config to file | {}\n".format(device))
+    with open("/home/ntc/files/scripts/configs/{}.cfg".format(device), "w") as config_file:
+        config_file.write(config)
+    net_device.disconnect()
+    
+    ####################################################################################################
+    ##################################  LAB 17 Using Python Functions  #################################
+    ####################################################################################################
+
+#! /usr/bin/env python
+
+def get_vlans():
+    return [1, 5, 10, 20]
+
+vlans = get_vlans()
+
+print(vlans)
+
+ntc@ntc-training:scripts$ python functions.py
+[1, 5, 10, 20]
+ntc@ntc-training:scripts$
+
+#! /usr/bin/env python
+
+def get_vlans():
+    return [1, 5, 10, 20]
+
+vlans = get_vlans()
+
+print(vlans)
+
+def vlan_exists(vlan_id):
+    return vlan_id in [1, 5, 10, 20]
+
+print(vlan_exists(10))
+print(vlan_exists(12))
+
+def vlan_exists(vlan_id):
+    vlans = [1, 5, 10, 20]
+    is_vlan_valid = vlan_id in vlans
+    return is_vlan_valid
+
+def ez_cisco(hostname, username, password, show_command):
+    print(hostname)
+    print(username)
+    print(password)
+    print(show_command)
+
+ez_cisco('csr1', 'ntc', 'ntc123', 'show version')
+
+
+#! /usr/bin/env python
+
+def get_vlans():
+    return [1, 5, 10, 20]
+
+vlans = get_vlans()
+
+print(vlans)
+
+def vlan_exists(vlan_id):
+    return vlan_id in [1, 5, 10, 20]
+
+print(vlan_exists(10))
+print(vlan_exists(12))
+
+def ez_cisco(hostname, username, password, show_command):
+    print(hostname)
+    print(username)
+    print(password)
+    print(show_command)
+
+ez_cisco('csr1', 'ntc', 'ntc123', 'show version')
+
+ntc@ntc-training:scripts$ python functions.py
+[1, 5, 10, 20]
+True
+False
+csr1
+ntc
+ntc123
+show version
+ntc@ntc-training:scripts$
+
+#! /usr/bin/env python
+
+def ez_cisco(hostname, username, password, show_command):
+    print(hostname)
+    print(username)
+    print(password)
+    print(show_command)
+
+ez_cisco('csr1', 'ntc', 'ntc123', 'show version')
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+def ez_cisco(hostname, username, password, show_command):
+    platform = "cisco_ios"
+    device = ConnectHandler(ip=hostname, username=username, password=password, device_type=platform)
+
+    output = device.send_command(show_command)
+    device.disconnect()
+
+    return output
+
+response = ez_cisco('csr1', 'ntc', 'ntc123', 'show version')
+
+print(response)
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+def ez_cisco(hostname, show_command, username='ntc', password='ntc123'):
+    platform = "cisco_ios"
+    device = ConnectHandler(ip=hostname, username=username, password=password, device_type=platform)
+
+    output = device.send_command(show_command)
+    device.disconnect()
+
+    return output
+
+response = ez_cisco('csr1', 'show version')
+
+print(response)
+
+response = ez_cisco('csr1', 'show version')
+print(response)
+
+response = ez_cisco('csr2', 'show ip int brief')
+print(response)
+
+response = ez_cisco('csr3', 'show run | inc snmp')
+print(response)
+
+#! /usr/bin/env python
+
+from netmiko import ConnectHandler
+
+def ez_cisco(hostname, show_command, username='ntc', password='ntc123'):
+    platform = "cisco_ios"
+    device = ConnectHandler(ip=hostname, username=username, password=password, device_type=platform)
+
+    output = device.send_command(show_command)
+    return output
+
+response = ez_cisco('csr1', 'show version')
+print(response)
+
+response = ez_cisco('csr2', 'show ip int brief')
+print(response)
+
+response = ez_cisco('csr3', 'show run | inc snmp')
+print(response)
+    
+    ####################################################################################################
+    ############################  LAB 18 Re-factoring Code with Functions  #############################
+    ####################################################################################################
