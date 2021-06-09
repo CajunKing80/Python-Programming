@@ -2426,3 +2426,175 @@ main()
     ##################################  LAB 19 Passing in User Input  ##################################
     ####################################################################################################
 
+snmp-server community networktocode RO
+snmp-server community public RO
+snmp-server community ntcrw RW
+snmp-server community supersecret RW
+snmp-server location new_york
+snmp-server contact jane_smith
+
+
+from netmiko import ConnectHandler
+
+
+def connect_to_device(hostname, username, password, device_type):
+    message = "Connecting to device"
+    print_logger(message, hostname)
+    net_d = ConnectHandler(host=hostname, username=username, password=password, device_type=device_type)
+
+    return net_d
+
+def deploy_commands(device, hostname, config_file):
+    print("Sending commands from file | {}".format(hostname))
+    device.send_config_from_file(config_file)
+
+def print_logger(message, hostname):
+    print("{} | {}".format(message, hostname))
+
+def main(device, username, password, device_type):
+    config_file = './configs/snmp.cfg'
+
+    net_device = connect_to_device(device, username, password, device_type)
+
+    deploy_commands(net_device, device, config_file)
+
+    print_logger("Disconnecting from device", device)
+    net_device.disconnect()
+
+if __name__ == "__main__":
+    device = 'csr1'
+    username = 'ntc'
+    password = 'ntc123'
+    device_type = 'cisco_ios'
+
+    main(device, username, password, device_type)
+
+if __name__ == "__main__":
+    device = input("Please enter the hostname or IP: ")
+    username = input("Please enter the username: ")
+    password = input("Please enter the password: ")
+    device_type = input("Please enter the device type: ")
+
+    main(device, username, password, device_type)
+
+
+from getpass import getpass
+
+
+password = getpass("Please enter the password: ")
+
+
+import argparse
+
+
+    device = input("Please enter the hostname or IP: ")
+    username = input("Please enter the username: ")
+    password = getpass("Please enter the password: ")
+    device_type = input("Please enter the device type: ")
+
+
+    parser = argparse.ArgumentParser(description='Collect device and data'
+                                     ' file information to configure a device')
+    parser.add_argument('-i', '--ip',
+                        help='Enter the IP address or hostname of the device',
+                        required=True)
+    parser.add_argument('-d', '--device_type', help='Enter the device type',
+                        required=True)
+    parser.add_argument('-u', '--username', help='Enter the username',
+                        required=True)
+    parser.add_argument('-p', '--password', help='Enter the password',
+                        required=True)
+
+    # parse all args and render
+    args = parser.parse_args()
+
+    device = args.ip
+    username = args.username
+    password = args.password
+    device_type = args.device_type
+
+
+ntc@ntc-training:scripts$ python user-flags.py
+usage: flags_user_input.py [-h]  -i IP -d DEVICE_TYPE -u
+                             USERNAME -p PASSWORD
+flags_user_input.py: error: argument -i/--ip is required
+
+
+ntc@ntc-training:scripts$ python user-flags.py --help
+usage: flags_user_input.py [-h] -i IP -d DEVICE_TYPE -u
+                             USERNAME -p PASSWORD
+Collect device and data file information to configure a device
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i IP, --ip IP        Enter the IP address or hostname of the device
+  -d DEVICE_TYPE, --device_type DEVICE_TYPE
+                        Enter the device type
+  -u USERNAME, --username USERNAME
+                        Enter the username
+  -p PASSWORD, --password PASSWORD
+                        Enter the password
+
+
+
+ntc@ntc-training:scripts$ python user-flags.py -i csr1 -d cisco_ios -u ntc -p ntc123
+# output omitted
+
+
+print(sys.argv)
+
+
+
+#! /usr/bin/env python
+
+import sys
+
+if __name__ == "__main__":
+
+    print('HERE ARE MY ARGUMENTS: ')
+    print(sys.argv)
+
+
+
+ntc@ntc-training:scripts$ python basic_args.py
+HERE ARE MY ARGUMENTS:
+['basic_args.py']
+
+
+ntc@ntc-training:scripts$ python basic_args.py cisco arista juniper
+
+
+if __name__ == "__main__":
+
+    print('HERE ARE MY ARGUMENTS: ')
+
+    args = sys.argv
+
+    print(args[1])
+
+
+ntc@ntc-training:scripts$ python basic_args.py cisco arista juniper
+
+
+>>> args = ['basic_args.py', 'cisco', 'arista', 'juniper']
+>>>
+>>> args[1:]
+['cisco', 'arista', 'juniper']
+>>>
+>>>
+>>> limited = args[1:]
+>>>
+>>> if limited:
+...   'args were passed in'
+...
+'args were passed in'
+>>>
+>>>
+>>> args = ['basic_args.py']
+>>>
+>>> limited = args[1:]
+>>>
+>>> if limited:
+...   'args were passed in'
+...
+>>>

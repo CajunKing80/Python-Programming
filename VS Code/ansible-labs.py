@@ -474,3 +474,152 @@ vmx
     ##################################  LAB 6 Using the Debug Module  ##################################
     ####################################################################################################
 
+ntc@ntc-training:~$ cd ansible/
+ntc@ntc-training:ansible$
+
+ntc@ntc-training:ansible$ touch debug.yml
+ntc@ntc-training:ansible$
+
+
+---
+
+  - name: USING THE DEBUG MODULE
+    hosts: iosxe
+    connection: local
+    gather_facts: no
+
+
+    tasks:
+      - name: DEBUG AND PRINT TO TERMINAL
+        debug: 
+          var: ntc_vendor
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+    hosts: all
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+[all:vars]
+ansible_user=ntc
+ansible_ssh_pass=ntc123
+ntc_device_type=unknown
+
+
+---
+
+  - name: USING THE DEBUG MODULE
+    hosts: all
+    connection: local
+    gather_facts: no
+
+
+    tasks:
+      - name: DEBUG AND PRINT TO TERMINAL
+        debug:
+          var: ntc_vendor
+
+      - name: DEBUG AND PRINT DEVICE TYPE TO TERMINAL
+        debug:
+          var: ntc_device_type
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+[iosxe:vars]
+ansible_network_os=ios
+ntc_api=ssh
+ntc_vendor=cisco
+ntc_device_type=csr1000v
+
+[nxos:vars]
+ansible_network_os=nxos
+ntc_api=nxapi
+ntc_vendor=cisco
+ntc_device_type=n9kv
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+
+[iosxe]
+csr1    ntc_device_type=csr1000v-ng
+csr2
+csr3
+
+[nxos-spines]
+nxos-spine1  ntc_device_type=n9k
+nxos-spine2
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+---
+
+  - name: USING THE DEBUG MODULE
+    hosts: all
+    connection: local
+    gather_facts: no
+
+
+    tasks:
+      - name: DEBUG AND PRINT TO TERMINAL
+        debug: 
+          var: ntc_vendor
+
+      - name: DEBUG AND PRINT DEVICE TYPE TO TERMINAL
+        debug:
+          var: ntc_device_type
+
+      - name: DEBUG AND PRINT THE OS
+        debug: 
+          msg: "The OS for {{ inventory_hostname }} is {{ ansible_network_os }}."
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+[iosxe]
+csr1    ntc_device_type=csr1000v-ng
+csr2    ansible_host=10.1.1.1
+csr3
+
+
+      - name: DEBUG AND PRINT INVENTORY_HOSTNAME VS ANSIBLE_HOST
+        debug: 
+           msg: "Devices defined in inventory_hostname: {{ inventory_hostname }} and ansible_host: {{ ansible_host }}"
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+# Remove ansible_host=10.1.1.1 from the inventory or it will cause problems in later labs.
+
+      - name: DEBUG AND PRINT LIST OF PLAY_HOSTS
+        debug: 
+          var: play_hosts
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+      - name: DEBUG AND PRINT GROUP_NAMES
+        debug: 
+          var: group_names
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+
+---
+
+  - name: USING THE DEBUG MODULE
+    hosts: csr1
+    connection: local
+    gather_facts: no
+
+
+      - name: DEBUG AND PRINT GROUPS
+        debug: 
+          var: groups
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+
+      - name: DEBUG AND PRINT ANSIBLE_VERSION
+        debug: 
+           msg: "Ansible Version: '{{ ansible_version }}'"
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
