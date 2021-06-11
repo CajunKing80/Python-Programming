@@ -623,3 +623,819 @@ ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
            msg: "Ansible Version: '{{ ansible_version }}'"
 
 ntc@ntc-training:ansible$ ansible-playbook -i inventory debug.yml
+
+    ####################################################################################################
+    ###############################  LAB 7 Prompting the User for Input  ###############################
+    ####################################################################################################
+
+ntc@ntc-training:ansible$ touch user_input.yml
+ntc@ntc-training:ansible$
+
+
+---
+- name: COLLECT USERNAME AND PASSWORD
+  hosts: csr1
+  connection: local
+  gather_facts: no
+
+
+
+---
+- name: COLLECT USERNAME AND PASSWORD
+  hosts: csr1
+  connection: local
+  gather_facts: no
+
+  vars_prompt:
+    - name: un
+      prompt: "Please enter the username"
+      private: no
+
+    - name: pwd
+      prompt: "Please enter the password"
+      private: no
+
+  tasks:
+
+    - name: DISPLAY THE USERNAME AND PASSWORD
+      debug:
+        msg: "The Username is {{ un }} and password is {{ pwd }}"
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory user_input.yml
+
+
+---
+- name: COLLECT USERNAME AND PASSWORD
+  hosts: csr1
+  connection: local
+  gather_facts: no
+
+  vars_prompt:
+    - name: un
+      prompt: "Please enter the username"
+      private: no
+
+    - name: pwd
+      prompt: "Please enter the password"
+      private: yes
+
+  tasks:
+
+    - name: DISPLAY THE USERNAME AND PASSWORD
+      debug:
+        msg: "The Username is {{ un }} and password is {{ pwd }}"
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory user_input.yml
+
+
+---
+- name: COLLECT USERNAME AND PASSWORD
+  hosts: csr1
+  connection: local
+  gather_facts: no
+
+  vars_prompt:
+    - name: un
+      prompt: "Please enter the username"
+      private: no
+      default: ntc
+
+    - name: pwd
+      prompt: "Please enter the password"
+
+  tasks:
+
+    - name: DISPLAY THE USERNAME AND PASSWORD
+      debug:
+        msg: "The Username is {{ un }} and password is {{ pwd }}"
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory user_input.yml
+
+    ####################################################################################################
+    #######################  LAB 8 Auto-Create Directories Using the File Module  ######################
+    ####################################################################################################
+
+
+ntc@ntc-training:ansible$ ansible-doc file
+
+ntc@ntc-training:ansible$ touch auto-create.yml
+ntc@ntc-training:ansible$
+
+
+---
+
+  - name: Auto Generate Files and Directories
+    hosts: all
+    connection: local
+    gather_facts: no
+
+
+
+---
+
+  - name: Auto Generate Files and Directories
+    hosts: all
+    connection: local
+    gather_facts: no
+
+    tasks:
+
+      - name: CREATE DIRECTORIES BASED ON OS
+        file:
+          path: ./tmp/{{ ansible_network_os }}/
+          state: directory
+          
+          
+          
+ntc@ntc-training:ansible$ tree
+
+
+---
+
+  - name: Auto Generate Files and Directories
+    hosts: all
+    connection: local
+    gather_facts: no
+
+    tasks:
+
+      - name: CREATE DIRECTORIES BASED ON OS
+        file:
+          path: ./tmp/{{ ansible_network_os }}/
+          state: directory
+
+      - name: CREATE SNMP.CONF FILE
+        file:
+          path: ./tmp/{{ ansible_network_os }}/{{ inventory_hostname }}-snmp.conf
+          state: touch 
+            
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory auto-create.yml
+
+ntc@ntc-training:ansible$ tree
+
+
+---
+
+  - name: Auto Generate Files and Directories
+    hosts: all
+    connection: local
+    gather_facts: no
+
+    tasks:
+
+      - name: DELETE DIRECTORIES PREVIOUSLY CREATED BASED ON OS
+        file:
+          path: ./tmp
+          state: absent
+            
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory auto-create.yml
+
+ntc@ntc-training:ansible$ tree
+
+    ####################################################################################################
+    ##########################  LAB 9 Getting Started with the Command Module  #########################
+    ####################################################################################################
+
+
+---
+
+  - name: BACKUP SHOW VERSION FOR IOS
+    hosts: csr1
+    connection: network_cli
+    gather_facts: no
+
+    tasks:
+
+
+
+---
+
+  - name: BACKUP SHOW VERSION FOR IOS
+    hosts: csr1
+    connection: network_cli
+    gather_facts: no
+
+    tasks:
+      - name: GET SHOW COMMANDS
+        ios_command:
+          commands: show version
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory core-command.yml 
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory core-command.yml -v
+
+      - name: GET SHOW COMMANDS
+        ios_command:
+          commands: show version
+        register: config_data
+
+      - name: VIEW DATA STORED IN CONFIG_DATA
+        debug:
+          var: config_data
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory core-command.yml
+
+      - name: GENERATE DIRECTORIES
+        file:
+          path: ./command-outputs/{{ ansible_network_os }}
+          state: directory
+
+
+      - name: SAVE SH VERSION TO FILE
+        copy :
+          content: "{{ config_data['stdout'][0] }}"
+          dest: ./command-outputs/{{ ansible_network_os }}/show_version.txt
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory core-command.yml
+
+      - name: SAVE SH VERSION TO FILE
+        copy :
+          content: "{{ config_data['stdout'][0] }}"
+          dest: ./command-outputs/{{ ansible_network_os }}/{{ inventory_hostname}}-show_version.txt
+
+
+
+---
+
+  - name: BACKUP SHOW VERSION ON IOS
+    hosts: iosxe
+    connection: network_cli
+    gather_facts: no
+
+    tasks:
+      - name: GET SHOW COMMANDS
+        ios_command:
+          commands: show version
+        register: config_data
+
+      - name: VIEW DATA STORED IN CONFIG_DATA
+        debug:
+          var: config_data
+
+      - name: GENERATE DIRECTORIES
+        file:
+          path: ./command-outputs/{{ ansible_network_os }}/
+          state: directory
+
+      - name: SAVE SH VERSION TO FILE
+        copy :
+          content: "{{ config_data['stdout'][0] }}"
+          dest: ./command-outputs/{{ ansible_network_os }}/{{ inventory_hostname}}-show_version.txt
+
+    ####################################################################################################
+    ##############################  LAB 10 Continuous Compliance with IOS  #############################
+    ####################################################################################################      
+
+
+---
+
+  - name: IOS COMPLIANCE
+    hosts: iosxe
+    connection: network_cli
+    gather_facts: no
+
+
+    tasks:
+
+      - name: IOS show version
+        ios_command:
+          commands:
+            - show version
+        register: output
+
+      - name: CHECK OS AND CONFIG REGISTER
+        assert:
+          that:
+           - "'17.01.01' in output['stdout'][0]"
+           - "'0x2102' in output['stdout'][0]"
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory compliance.yml   
+
+
+---
+
+  - name: IOS COMPLIANCE
+    hosts: iosxe
+    connection: network_cli
+    gather_facts: no
+
+
+    tasks:
+
+      - name: IOS show version
+        ios_command:
+          commands:
+            - show version
+        register: output
+
+      - name: CHECK OS AND CONFIG REGISTER
+        assert:
+          that:
+           - "'17.01.01' in output['stdout'][0]"
+           - "'0x2102' in output['stdout'][0]"
+           
+           
+  
+  - name: JUNOS COMPLIANCE
+    hosts: vmx
+    connection: netconf
+    gather_facts: no
+    tags: vmx
+
+
+    tasks:
+
+      - name: JUNOS show version
+        junos_command:
+          commands:
+            - show system storage
+          display: json
+        register: output
+
+      - name: VIEW JSON DATA
+        debug:
+          var: output
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory compliance.yml   
+
+
+      - name: CREATE NEW VARIABLES
+        set_fact:
+          percent: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['used-percent'][0]['data'] }}"
+          filesystem: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['filesystem-name'][0]['data'] }}"
+          blocks: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['available-blocks'][0]['data'] }}"
+          storage: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['available-blocks'][0]['attributes']['junos:format'] }}"
+
+      - name: VIEW DATA STORED IN NEW VARIABLES
+        debug:
+          msg: "Percent: {{ percent }}%,  filesystem: {{ filesystem }}, Blocks: {{ blocks }}, Storage: {{ storage }}"
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory compliance.yml   
+
+
+      - name: CHECK STORAGE FILESYSTEM PERCENT
+        assert:
+          that:
+            - "percent | int  <= 50"
+          fail_msg: "Warning!! filesystem {{ filesystem }} is at {{ percent }}%"
+          success_msg: "Current filesystem  {{ filesystem }} is at {{ percent }}%"
+        
+      - name: CHECK STORAGE FILESYSTEM AVAILABILITY
+        assert:
+          that:
+            - "blocks | int >= 4194304"
+          fail_msg: "Warning!! filesystem {{ filesystem }} is at {{ storage }}"
+          success_msg: "Current filesystem  {{ filesystem }} is at {{ storage }}"
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory compliance.yml 
+
+
+      - name: CREATE NEW VARIABLES
+        set_fact:
+          #percent: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['used-percent'][0]['data'] }}"
+          percent: "60"
+          filesystem: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['filesystem-name'][0]['data'] }}"
+          blocks: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['available-blocks'][0]['data'] }}"
+          storage: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['available-blocks'][0]['attributes']['junos:format'] }}"
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory compliance.yml 
+
+
+      - name: CHECK STORAGE FILESYSTEM PERCENT
+        assert:
+          that:
+           - "percent | int  <= 50"
+          fail_msg: "Warning!! filesystem {{ filesystem }} is at {{ percent }}%"
+          success_msg: "Current filesystem  {{ filesystem }} is at {{ percent }}%"
+        ignore_errors: true
+        
+
+      - name: CHECK STORAGE FILESYSTEM AVAILABILITY
+        assert:
+          that:
+           - "blocks | int >= 4194304"
+          fail_msg: "Warning!! filesystem {{ filesystem }} is at {{ storage }}"
+          success_msg: "Current filesystem  {{ filesystem }} is at {{ storage }}"
+        ignore_errors: true
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory compliance.yml  
+
+
+---
+
+  - name: IOS COMPLIANCE
+    hosts: iosxe
+    connection: network_cli
+    gather_facts: no
+    tags: ios
+
+
+    tasks:
+
+      - name: IOS show version
+        ios_command:
+          commands:
+            - show version
+        register: output
+
+      - name: CHECK OS AND CONFIG REGISTER
+        assert:
+          that:
+           - "'17.01.01' in output['stdout'][0]"
+           - "'0x2102' in output['stdout'][0]"
+
+
+  - name: JUNOS COMPLIANCE
+    hosts: vmx
+    connection: netconf
+    gather_facts: no
+    tags: vmx
+
+
+    tasks:
+
+      - name: JUNOS show version
+        junos_command:
+          commands:
+            - show system storage
+          display: json
+        register: output
+
+
+      - name: VIEW JSON DATA
+        debug:
+          var: output
+
+      - name: CREATE NEW VARIABLES
+        set_fact:
+           #percent: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['used-percent'][0]['data'] }}"
+           percent: "60"
+           filesystem: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['filesystem-name'][0]['data'] }}"
+           blocks: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['available-blocks'][0]['data'] }}"
+           storage: "{{ output['stdout'][0]['system-storage-information'][0]['filesystem'][0]['available-blocks'][0]['attributes']['junos:format'] }}"
+
+
+      - name: VIEW DATA STORED IN NEW VARIABLES
+        debug:
+          msg: "Percent: {{ percent }}%,  filesystem: {{ filesystem }}, Blocks: {{ blocks }}, Storage: {{ storage }}"
+
+
+      - name: CHECK STORAGE FILESYSTEM PERCENT
+        assert:
+          that:
+           - "percent | int  <= 50"
+          fail_msg: "Warning!! filesystem {{ filesystem }} is at {{ percent }}%"
+          success_msg: "Current filesystem  {{ filesystem }} is at {{ percent }}%"
+        ignore_errors: true
+        
+
+      - name: CHECK STORAGE FILESYSTEM AVAILABILITY
+        assert:
+          that:
+           - "blocks | int >= 4194304"
+          fail_msg: "Warning!! filesystem {{ filesystem }} is at {{ storage }}"
+          success_msg: "Current filesystem  {{ filesystem }} is at {{ storage }}"
+        ignore_errors: true
+
+
+
+##################################################################################################################################
+##################################################################################################################################
+##################################  SECTION 02 - Configuration Templating with Jinja2 and YAML  ##################################
+##################################################################################################################################
+##################################################################################################################################
+
+
+    ####################################################################################################
+    ##########################  LAB 11 Getting Started with Jinja2 Templates  ##########################
+    ####################################################################################################
+
+# ./ansible/templates/ios-snmp.j2
+# ./ansible/templates/junos-snmp.j2
+# ./ansible/group_vars/AMER.yml
+# ./ansible/group_vars/EMEA.yml
+
+ntc@ntc-training:ansible$ touch deploy-snmp.yml
+ntc@ntc-training:ansible$
+
+---
+
+- name: GENERATE SNMP CONFIGS USING JINJA2 - AMERICAS
+  hosts: AMER
+  connection: local
+  gather_facts: no
+
+  vars:
+    snmp_ro: ntc_course
+
+  tasks:
+
+    - name: VIEW SNMP_RO VARIABLE
+      debug: 
+        var: snmp_ro
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory deploy-snmp.yml
+
+
+---
+
+- name: GENERATE SNMP CONFIGS USING JINJA2 - AMERICAS
+  hosts: AMER
+  connection: local
+  gather_facts: no
+
+  vars:
+    snmp_ro: ntc_course
+
+  tasks:
+  
+    - name: VIEW SNMP_RO VARIABLE
+      debug: 
+        var: snmp_ro
+        
+    - name: GENERATE IOS SNMP CONFIGURATIONS
+      template:
+        src: ios-snmp.j2
+        dest: "./configs/{{ inventory_hostname }}-snmp.cfg"
+
+
+ntc@ntc-training:ansible$
+ntc@ntc-training:ansible$ mkdir templates
+ntc@ntc-training:ansible$ cd templates
+ntc@ntc-training:templates$
+
+ntc@ntc-training:templates$ touch ios-snmp.j2
+ntc@ntc-training:templates$
+
+snmp-server community {{ snmp_ro }}  RO
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory deploy-snmp.yml
+
+ntc@ntc-training:ansible$ cd configs
+ntc@ntc-training:configs$ cat csr1-snmp.cfg
+
+snmp-server community ntc_course  RO
+
+ntc@ntc-training:ansible$ mkdir group_vars
+ntc@ntc-training:ansible$ cd group_vars
+ntc@ntc-training:group_vars$ touch AMER.yml
+ntc@ntc-training:group_vars$ touch EMEA.yml
+ntc@ntc-training:group_vars$
+
+# AMER.yml
+snmp_ro: ntc_course
+snmp_rw: ntc_private
+snmp_location: NYC
+snmp_contact: netops_team
+
+# EMEA.yml
+snmp_ro: ntc_course
+snmp_rw: ntc_private
+snmp_location: MILAN
+snmp_contact: netops_team
+
+# Update ios-snmp.j2
+snmp-server community {{ snmp_ro }}  RO
+snmp-server community {{ snmp_rw }}  RW
+snmp-server contact {{ snmp_contact }}  
+snmp-server location {{ snmp_location }}
+
+# Update junos-snmp.j2
+set snmp community {{ snmp_ro }} authorization read-only
+set snmp community {{ snmp_rw }} authorization read-write
+set snmp location {{ snmp_location }}
+set snmp contact {{ snmp_contact }}
+
+
+---
+
+- name: GENERATE SNMP CONFIGS USING JINJA2 - AMERICAS
+  hosts: AMER
+  connection: local
+  gather_facts: no
+
+  tasks:
+ 
+    - name: VIEW SNMP_RO VARIABLE
+      debug: 
+         var: snmp_ro
+        
+    - name: VIEW SNMP_LOCATION VARIABLE
+      debug: 
+         var: snmp_location
+        
+        
+    - name: GENERATE IOS SNMP CONFIGURATIONS
+      template:
+         src: ios-snmp.j2
+         dest: "./configs/{{ inventory_hostname }}-snmp.cfg"
+
+
+# Update play for EMEA
+
+---
+
+- name: GENERATE SNMP CONFIGS USING JINJA2 - AMERICAS
+  hosts: AMER
+  connection: local
+  gather_facts: no
+
+  tasks:
+ 
+    - name: VIEW SNMP_RO VARIABLE
+      debug: 
+         var: snmp_ro
+        
+    - name: VIEW SNMP_LOCATION VARIABLE
+      debug: 
+         var: snmp_location
+        
+        
+    - name: GENERATE IOS SNMP CONFIGURATIONS
+      template:
+         src: ios-snmp.j2
+         dest: "./configs/{{ inventory_hostname }}-snmp.cfg"
+
+- name: GENERATE SNMP CONFIGS USING JINJA2 - EMEA
+  hosts: EMEA
+  connection: local
+  gather_facts: no
+
+  tasks:
+    
+    - name: VIEW SNMP_RO VARIABLE
+      debug: 
+        var: snmp_ro
+        
+    - name: VIEW SNMP_LOCATION VARIABLE
+      debug: 
+        var: snmp_location
+    
+    - name: GENERATE JUNOS SNMP CONFIGURATIONS
+      template:
+        src: junos-snmp.j2
+        dest: "./configs/{{ inventory_hostname }}-snmp.cfg"
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory deploy-snmp.yml
+
+ntc@ntc-training:ansible$ ls configs/
+# output omitted
+
+    ####################################################################################################
+    ##########################  LAB 12 Expanding the Use of Jinja2 Templates  ##########################
+    ####################################################################################################
+
+# AMER.yml
+snmp_config:
+  ro:
+    - public
+    - ntc-course
+  rw:
+    - private
+    - ntc-private
+  contact: netops_team
+  location: NYC
+
+# EMEA.yml
+snmp_config:
+  ro:
+    - public
+    - ntc-course
+  rw:
+    - private
+    - ntc-private
+  contact: netops_team
+  location: MILAN
+
+# ios-snmpv2.j2
+{% for ro_comm in snmp_config.ro %}
+snmp-server community {{ ro_comm }} RO
+{% endfor %}
+{% for rw_comm in snmp_config.rw %}
+snmp-server community {{ rw_comm }} RW
+{% endfor %}
+snmp-server location {{ snmp_config.location }}
+snmp-server contact {{ snmp_config.contact }}
+
+# junos-snmpv2.j2
+{% for ro_comm in snmp_config.ro %}
+set snmp community {{ ro_comm }} authorization read-only
+{% endfor %}
+{% for rw_comm in snmp_config.rw %}
+set snmp community {{ rw_comm }} authorization read-write
+{% endfor %}
+set snmp location {{ snmp_config.location }}
+set snmp contact {{ snmp_config.contact }}
+
+
+---
+
+- name: GENERATE SNMP CONFIGS USING JINJA2 - AMERICAS
+  hosts: AMER
+  connection: local
+  gather_facts: no
+
+  tasks:
+ 
+    - name: GENERATE IOS SNMP CONFIGURATIONS
+      template:
+         src: ios-snmpv2.j2
+         dest: "./configs/{{ inventory_hostname }}-snmp.cfg"
+
+- name: GENERATE SNMP CONFIGS USING JINJA2 - EMEA
+  hosts: EMEA
+  connection: local
+  gather_facts: no
+
+  tasks:
+    
+    - name: GENERATE JUNOS SNMP CONFIGURATIONS
+      template:
+        src: junos-snmpv2.j2
+        dest: "./configs/{{ inventory_hostname }}-snmp.cfg"
+
+
+# Update playbook src
+
+---
+
+- name: GENERATE SNMP CONFIGS USING JINJA2 - AMERICAS
+  hosts: AMER
+  connection: local
+  gather_facts: no
+
+  tasks:
+ 
+    - name: GENERATE IOS SNMP CONFIGURATIONS
+      template:
+         src: ios-snmpv2.j2
+         dest: "./configs/{{ inventory_hostname }}-snmp.cfg"
+
+- name: GENERATE SNMP CONFIGS USING JINJA2 - EMEA
+  hosts: EMEA
+  connection: local
+  gather_facts: no
+
+  tasks:
+    
+    - name: GENERATE JUNOS SNMP CONFIGURATIONS
+      template:
+        src: junos-snmpv2.j2
+        dest: "./configs/{{ inventory_hostname }}-snmp.cfg"
+
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory deploy-snmp.yml
+
+# Create host_cars and csr3.yml inside this directory
+snmp_config:
+  ro:
+    - ntc-public
+  rw:
+    - private
+    - ntc-private
+  contact: netdevops_tiger_team
+  location: NYC
+
+ntc@ntc-training:ansible$ ansible-playbook -i inventory deploy-snmp.yml
+
+    - name: DEBUG AND PRINT SNMP VARIABLES
+      debug:
+        var: snmp_config
+
+---
+
+- name: GENERATE SNMP CONFIGS USING JINJA2
+  hosts: AMER, EMEA
+  connection: local
+  gather_facts: no
+
+  tasks:
+ 
+    - name: GENERATE SNMP CONFIGURATIONS
+      template:
+         src: "{{ ansible_network_os }}-snmpv2.j2"
+         dest: "./configs/{{ inventory_hostname }}-snmp.cfg"
+
+##################################################################################################################################
+##################################################################################################################################
+#################################  SECTION 03 - Diving Deeper Into Core Command & Config Modules  ################################
+##################################################################################################################################
+##################################################################################################################################
+
+
+    ####################################################################################################
+    #####################  LAB 13 Validating Reachability with the Command Module  #####################
+    ####################################################################################################
+
