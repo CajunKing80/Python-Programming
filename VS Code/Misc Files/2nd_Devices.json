@@ -1,0 +1,53 @@
+[
+  {
+    "name": "B-R-1",
+    "make": "Cisco",
+    "model": "CSR1000V",
+    "interfaces": [
+      {"name": "gi0/0", "is_active": false },
+      {"name": "gi0/1", "is_active": true },
+      {"name": "gi0/2", "is_active": false },
+      {"name": "gi0/3", "is_active": false },
+      {"name": "gi0/4", "is_active": false },
+      {"name": "gi0/5", "is_active": true },
+      {"name": "gi0/6", "is_active": false },
+      {"name": "gi0/7", "is_active": false },
+      {"name": "gi0/8", "is_active": false },
+      {"name": "gi0/9", "is_active": true, "is_trunk": true }
+    ]
+  },
+  {
+    "name": "B-R-2",
+    "make": "Cisco",
+    "model": "CSR1000V",
+    "interfaces": [
+      {"name": "gi0/0", "is_active": false },
+      {"name": "gi0/1", "is_active": true },
+      {"name": "gi0/2", "is_active": false },
+      {"name": "gi0/3", "is_active": false },
+      {"name": "gi0/4", "is_active": false },
+      {"name": "gi0/5", "is_active": true },
+      {"name": "gi0/6", "is_active": false },
+      {"name": "gi0/7", "is_active": false },
+      {"name": "gi0/8", "is_active": false, "ip4": "169.192.172.13" },
+      {"name": "gi0/9", "is_active": false }
+    ]
+  },
+  {
+    "name": "B-R-3",
+    "make": "Juniper",
+    "model": "KRS-1",
+    "interfaces": [
+      {"name": "gi0/0", "is_active": false, "is_trunk": true },
+      {"name": "gi0/1", "is_active": false, "ip4": "192.168.0.13" },
+      {"name": "gi0/2", "is_active": true },
+      {"name": "gi0/3", "is_active": false },
+      {"name": "gi0/4", "is_active": false },
+      {"name": "gi0/5", "is_active": false },
+      {"name": "gi0/6", "is_active": false },
+      {"name": "gi0/7", "is_active": false },
+      {"name": "gi0/8", "is_active": false },
+      {"name": "gi0/9", "is_active": false }
+    ]
+  }
+]
