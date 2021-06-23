@@ -47,7 +47,7 @@ import requests
 from dnacentersdk import api
 
 headers = {
-    'X-Auth-Token': 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDJjMGUyODE0NzEwYTIyZDFmN2UxNzIiLCJhdXRoU291cmNlIjoiaW50ZXJuYWwiLCJ0ZW5hbnROYW1lIjoiVE5UMCIsInJvbGVzIjpbIjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwOSJdLCJ0ZW5hbnRJZCI6IjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwMiIsImV4cCI6MTYyMjg0MzU5MCwiaWF0IjoxNjIyODM5OTkwLCJqdGkiOiIyNDExZWFmYy01ODQ5LTQ5YWUtODIxYi05YzIyM2E4YWRjMDgiLCJ1c2VybmFtZSI6ImRldm5ldHVzZXIifQ.U6d33UroOiIRH4LQOBw7rYTitFvsx0TAvk0ubAnSWSsfjY9p7qDTqnKex5Wo_SjAym7-9_dqvucofWibA8qnJFxqHqGSU9SFOdcvBB-21uT5RKnfG9mQXEXeScHEfh13quEl6SjwhUFgiG9zG8HQokrwDcinom280Ty_2B1pxuVS6TGeBFptJ2qHCox-1nwJjIEqMKMmqPpmbkoYZIcFhYOxWm4s7O23p2qetLeMdrMguIk-xbtdz1O3dFMU4cP_MLcGffu0FSPKN35Xdt_lADAEhZym3fkpMeazfJBnPVzOHszoTVFNonl9Czpl_xX18CBD9GbhFatlLZCsqbht7w',
+    'X-Auth-Token': 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2MDJjMGUyODE0NzEwYTIyZDFmN2UxNzIiLCJhdXRoU291cmNlIjoiaW50ZXJuYWwiLCJ0ZW5hbnROYW1lIjoiVE5UMCIsInJvbGVzIjpbIjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwOSJdLCJ0ZW5hbnRJZCI6IjYwMmJlYmU1MTQ3MTBhMDBjOThmYTQwMiIsImV4cCI6MTYyNDQ5NDEyNCwiaWF0IjoxNjI0NDkwNTI0LCJqdGkiOiI1ZDBlMmQ1Mi02NmRlLTRmZTUtODJlMi02ZmE5YzBkOGVhNDQiLCJ1c2VybmFtZSI6ImRldm5ldHVzZXIifQ.AHtTpUJ7IIeX-_4131QTm9xBf3kYlNsNHlaIxhVZrFtETieWE4IStqNLulNiRCSkQrkn0nqp7h1SGvWzxLQTUZyNCLfM0ssqMyWbJyW-MnYdVh-rgcuefOp3OoOuBAwua5KwodduTLLsD1uqej41kcbkRqgeljmYfbPUShiYPa39qPB2BtUtpNG8QiWtewqx9Ncj2lbqhhGudeb93F8HlMTYQn3wJ6DCx85SzVTG0mZRfQzPomJKv6ViWPeBrzH8W6YLDArgH81mog60q_bxclgL0-EJx-j00a7ohPXA479dPvmIk0BDr6qjxJaQMTHUBgLFWq_650G209IFAAsACA',
 }
 
 response = requests.get('https://sandboxdnac.cisco.com/dna/intent/api/v1/network-device', headers=headers)
@@ -62,11 +62,14 @@ print(f"\n{'='*100}  HARD  {'='*100}\n")
 DEVICES = DNAC.devices.get_device_list()
 
 print('-'*95)
-print('{0:25s}{1:1}{2:45s}{3:1}{4:15s}'.format("Device Name", "|", "Device Type", "|", "Last Updated"))
+print('{0:25s}{1:1}{2:50s}{3:1}{4:15s}'.format("Device Name", "|", "Device Type", "|", "Last Updated"))
 print('-'*95)
 
 for DEVICE in DEVICES.response: 
-    print ('{0:25s}{1:1}{2:45s}{3:1}{4:15s}'.format(DEVICE.hostname, "|", DEVICE.type, "|", DEVICE.lastUpdated))
+    print ('{0:25s}{1:1}{2:50s}{3:1}{4:15s}'.format(DEVICE.hostname, "|", DEVICE.type, "|", DEVICE.lastUpdated))
+    # print (DEVICE.hostname)
+    # print (DEVICE.type)
+    # print (DEVICE.lastUpdated)
 
 print('-'*95)
 print()
