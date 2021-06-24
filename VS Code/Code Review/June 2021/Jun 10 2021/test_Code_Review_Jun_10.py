@@ -1,9 +1,8 @@
 
 from Code_Review_Jun_10 import get_auth_token, get_name
-
 import requests
 from requests.auth import HTTPBasicAuth
-import json
+
 
 def test_for_not_100():
     url = 'https://sandboxdnac.cisco.com/dna/system/api/v1/auth/token'

@@ -7,6 +7,7 @@
 import requests
 from requests.auth import HTTPBasicAuth
 from dnacentersdk import api
+from prettytable import PrettyTable 
 
 
 def get_name():
@@ -62,19 +63,13 @@ def get_network_devices():
 
     DEVICES = DNAC.devices.get_device_list()
 
-    print('-'*95)
-    print('{0:25s}{1:1}{2:50s}{3:1}{4:15s}'.format("Device Name", "|", "Device Type", "|", "Last Updated"))
-    print('-'*95)
-
     for DEVICE in DEVICES.response: 
-        # print ('{0:25s}{1:1}{2:50s}{3:1}{4:15s}'.format(DEVICE.hostname, "|", DEVICE.type, "|", DEVICE.lastUpdated))
-        print (DEVICE.hostname)
-        print (DEVICE.type)
-        print (DEVICE.lastUpdated)
+        if DEVICE.hostname is not None:
+            print (f'{DEVICE.hostname} {":" :>5} {DEVICE.type} {":" :^5} {DEVICE.lastUpdated}')
 
-    print('-'*95)
     print()
     print('='*208)
 
 if __name__ == '__main__':
     get_network_devices()
+# print(f'{ip:15} {":" :^7} {len(results[ip]) :>11}')
