@@ -72,4 +72,3 @@ def get_network_devices():
 
 if __name__ == '__main__':
     get_network_devices()
-# print(f'{ip:15} {":" :^7} {len(results[ip]) :>11}')
