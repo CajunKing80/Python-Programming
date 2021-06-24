@@ -66,10 +66,10 @@ print('{0:25s}{1:1}{2:50s}{3:1}{4:15s}'.format("Device Name", "|", "Device Type"
 print('-'*95)
 
 for DEVICE in DEVICES.response: 
-    print ('{0:25s}{1:1}{2:50s}{3:1}{4:15s}'.format(DEVICE.hostname, "|", DEVICE.type, "|", DEVICE.lastUpdated))
-    # print (DEVICE.hostname)
-    # print (DEVICE.type)
-    # print (DEVICE.lastUpdated)
+    # print ('{0:25s}{1:1}{2:50s}{3:1}{4:15s}'.format(DEVICE.hostname, "|", DEVICE.type, "|", DEVICE.lastUpdated))
+    print (DEVICE.hostname)
+    print (DEVICE.type)
+    print (DEVICE.lastUpdated)
 
 print('-'*95)
 print()
