@@ -48,11 +48,12 @@ if __name__ == "__main__":
 
 def get_network_devices():
 
-    headers = {
-        'X-Auth-Token': '{get_auth_token}'
-    }
-
-    response = requests.get('https://sandboxdnac.cisco.com/dna/intent/api/v1/network-device', headers=headers)
+    headers = {'X-Auth-Token': '{get_auth_token}'}
+    main_url = 'https://sandboxdnac.cisco.com'
+    secondary_url = '/dna/intent/api/v1'
+    specific_url = '/network-device'
+    url = main_url + secondary_url + specific_url
+    response = requests.get(url, headers=headers)
 
 
     DNAC = api.DNACenterAPI(username="devnetuser", 
@@ -61,14 +62,19 @@ def get_network_devices():
 
     print(f"\n{'='*100}  HARD  {'='*100}\n")
 
-    DEVICES = DNAC.devices.get_device_list()
+    devices = DNAC.devices.get_device_list()
 
-    for DEVICE in DEVICES.response: 
-        if DEVICE.hostname is not None:
-            print (f'{DEVICE.hostname} {":" :>5} {DEVICE.type} {":" :^5} {DEVICE.lastUpdated}')
+    table = PrettyTable(["Hostname", "Device Type", "Last Updated"])
+    
+    for device in devices.response: 
 
+        table.add_row([device["hostname"],device["deviceType"],device["lastUpdated"]])
+    
+    print (table)
     print()
     print('='*208)
+
+
 
 if __name__ == '__main__':
     get_network_devices()
