@@ -48,17 +48,19 @@ if __name__ == "__main__":
 
 def get_network_devices():
 
-    headers = {'X-Auth-Token': '{get_auth_token}'}
-    main_url = 'https://sandboxdnac.cisco.com'
-    secondary_url = '/dna/intent/api/v1'
-    specific_url = '/network-device'
-    url = main_url + secondary_url + specific_url
+    headers = {
+        'X-Auth-Token': '{get_auth_token}'
+        }
+         
+    url = 'https://sandboxdnac.cisco.com/dna/intent/api/v1/network-device'
     response = requests.get(url, headers=headers)
 
 
-    DNAC = api.DNACenterAPI(username="devnetuser", 
+    DNAC = api.DNACenterAPI (
+                username="devnetuser", 
                 password="Cisco123!", 
-                base_url="https://sandboxdnac.cisco.com")
+                base_url="https://sandboxdnac.cisco.com"
+                )
 
     print(f"\n{'='*100}  HARD  {'='*100}\n")
 
