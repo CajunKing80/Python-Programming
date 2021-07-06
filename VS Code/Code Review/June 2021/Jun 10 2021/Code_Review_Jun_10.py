@@ -30,7 +30,7 @@ def get_auth_token():
     
     url = 'https://sandboxdnac.cisco.com/dna/system/api/v1/auth/token'
 
-    resp = requests.post(
+    response = requests.post(
         url, 
         auth = HTTPBasicAuth(
         username = 'devnetuser', 
@@ -38,7 +38,7 @@ def get_auth_token():
         )
     )
 
-    token = resp.json()['Token']
+    token = response.json()['Token']
 
     print (f"\n{'='*100} MEDIUM {'='*100}\n")
     print ("DNAC Token: {}".format(token))
@@ -63,12 +63,13 @@ def get_network_devices():
         }
          
     url = 'https://sandboxdnac.cisco.com/dna/intent/api/v1/network-device'
-    
+    payload = None 
+
     response = requests.get(
         url,
-        headers = headers
+        headers = headers,
+        data = payload
         )
-
 
     DNAC = api.DNACenterAPI(
         username = "devnetuser", 
@@ -95,8 +96,6 @@ def get_network_devices():
     print (table)
     print ()
     print ('='*208)
-
-
 
 if __name__ == '__main__':
     get_network_devices()
