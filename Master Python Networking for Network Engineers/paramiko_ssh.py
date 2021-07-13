@@ -4,9 +4,25 @@ import time
 ssh_client = paramiko.SSHClient()
 ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-router1 = {'hostname': '192.168.0.21', 'port': '22', 'username': 'ansible', 'password': 'ansible'}
-router2 = {'hostname': '192.168.0.24', 'port': '22', 'username': 'ansible', 'password': 'ansible'}
-router3 = {'hostname': '192.168.0.22', 'port': '22', 'username': 'ansible', 'password': 'ansible'}
+router1 = {
+    'hostname': '192.168.0.152',
+    'port': '22', 
+    'username': 
+    'ansible', 
+    'password': 'ansible'
+    }
+router2 = {
+    'hostname': '192.168.0.155', 
+    'port': '22', 
+    'username': 'ansible', 
+    'password': 'ansible'
+    }
+router3 = {
+    'hostname': '192.168.0.115', 
+    'port': '22', 
+    'username': 'ansible', 
+    'password': 'ansible'
+    }
 routers = [router1, router2, router3]
 
 for router in routers: 
@@ -16,18 +32,20 @@ for router in routers:
         look_for_keys = False, 
         allow_agent = False
         )
-    shell = ssh_client.invoke_shell()
+    cmd = ssh_client.invoke_shell()
 
-    shell.send('enable\n')
-    shell.send('conf t\n')
-    shell.send('router ospf 1\n')
-    shell.send('net 192.168.0.0 0.0.0.255 area 0\n')
-    shell.send('end\n')
-    shell.send('term len 0\n')
-    shell.send('sh ip protocols\n')
+    cmd.send('enable\n')
+    cmd.send('conf t\n')
+    cmd.send('router ospf 1\n')
+    cmd.send('net 192.168.0.0 0.0.0.255 area 0\n')
+    cmd.send('end\n')
+    cmd.send('term len 0\n')
+    cmd.send('sh ip protocols\n')
+    cmd.send('sh ip route\n')
+    cmd.send('sh ip os ne\n')
     time.sleep(2)
 
-    output = shell.recv(65535).decode('utf-8')
+    output = cmd.recv(65535).decode('utf-8')
     print (output
     )
 
