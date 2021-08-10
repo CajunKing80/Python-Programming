@@ -2,7 +2,6 @@ from netmiko import ConnectHandler
 from netmiko import file_transfer
 import time
 
-start = time.time()
 
 device = {
     "device_type": "cisco_ios",
@@ -15,10 +14,11 @@ device = {
 
 connection = ConnectHandler(**device)
 
-print("File transfer in progress...")
+print("\nFile transfer in progress...\n")
 
+start = time.time()
 
-transfer_output = file_transfer(
+scp = file_transfer(
     connection,
     source_file="csr1000v-universalk9.17.03.03.SPA.bin",
     dest_file="csr1000v-universalk9.17.03.03.SPA.bin",
@@ -27,13 +27,10 @@ transfer_output = file_transfer(
     overwrite_file=True,
     socket_timeout=30,
 )
-while file_transfer == True: 
-    print ("!")
-    time.sleep(5)
 
 end = time.time()
 
-print("Transfer Complete!!!")
-print(f"Total transfer time: {end - start}")
+print("Transfer Complete!!!\n")
+print(f"Total transfer time: {end - start}\n")
 
 connection.disconnect()
