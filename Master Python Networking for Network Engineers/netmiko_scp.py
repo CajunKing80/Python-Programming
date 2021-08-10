@@ -1,6 +1,7 @@
 from netmiko import ConnectHandler
 from netmiko import file_transfer
 import time
+from tqdm import tqdm 
 
 
 device = {
@@ -27,6 +28,9 @@ scp = file_transfer(
     overwrite_file=True,
     socket_timeout=30,
 )
+
+for i tqdm(517565655):
+    time.sleep(5)
 
 end = time.time()
 
