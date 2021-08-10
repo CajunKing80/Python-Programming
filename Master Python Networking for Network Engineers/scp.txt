@@ -1,0 +1,16 @@
+
+conf t
+hostname Kickstart
+username commadmin privilege 15 secret password
+ip domain name painheals.com
+crypto key generate rsa modulus 2048
+lin vty 0 15
+login authentication default
+transport input ssh
+exit
+ip scp server enable
+aaa new-model
+aaa authentication login default local
+aaa authorization exec default local none
+end
+wr
