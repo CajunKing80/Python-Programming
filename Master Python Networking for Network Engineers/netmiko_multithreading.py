@@ -3,8 +3,6 @@ from datetime import datetime
 import time
 import threading
 
-start = time.time()
-
 
 def backup(device):
     connection = ConnectHandler(**device)
@@ -32,7 +30,9 @@ def backup(device):
 with open("devices.txt") as f:
     devices = f.read().splitlines()
 
-threads = list()
+start = time.time()
+
+# threads = list()
 for ip in devices:
 
     device = {
@@ -43,15 +43,16 @@ for ip in devices:
         "port": 22,
         "verbose": True,
     }
-
-    th = threading.Thread(target=backup, args=(device,))
-    threads.append(th)
-
-for th in threads:
-    th.start()
-
-for th in threads:
-    th.join()
-
 end = time.time()
+
+#     th = threading.Thread(target=backup, args=(device,))
+#     threads.append(th)
+
+# for th in threads:
+#     th.start()
+
+# for th in threads:
+#     th.join()
+
+
 print(f"Total execution time: {end - start}")
