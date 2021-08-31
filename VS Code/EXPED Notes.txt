@@ -1,0 +1,96 @@
+    
+    ############
+    # MAIN.yml #
+    ############
+
+1. Starting point for the entire inventory update
+
+2. Task 1 creates a device variable folder on the localhost based on the kit_number. 
+
+3. Task 2 establishes an API call to Netbox to get the devices in the kit kit_number        
+    - Router
+    - Switch
+    - KG
+    - Etc. 
+
+4. Task 3 builds the configurations
+    - This task will pull in the build_device_host _vars.yml playbook to build the configs. 
+    - This play will loop over the device_list, which was set in the set_facts module in task 2, looping over every device_name in the dictionary
+
+
+    ##############################
+    # BUILD_DEVICE_HOST_VARS.yml #
+    ##############################
+
+1. Task 1 establishes an API call to return the ip address for the individual device and stores it in a varaible named ip_address_data 
+
+2. Task 2 pulls in the build_ip_mapping playbook to map ip addresses to interfaces (include_tasks module references this playbook)
+    - This will loop over the entire json/results dictionary in the device's API call 
+
+3. Task 3 establishes an API call to return the interfaces forthe individual device and stores it in a varaible named device_interface_data
+
+4. Task 4 pulls in the build_interface_vars playbook to create a structured data format of the returned data 
+
+5. Task 5 establishes an API call to return ALL data for the device 
+
+6. Task 6 establishes an API call to return the tenant data for the individual device 
+
+7. Task 7 uses the returned data to build a structured data format. 
+    - This task is individually looping over every item in the dictionary, and parsing into each 
+      k,v to return the specified data. 
+
+
+    ############################
+    # BUILD_INTERFACE_VARS.yml #
+    ############################
+
+1. Task 1 simply clears previous variables 
+
+2. Task 2 pulls in the handle_tags playbook to loop over the tags inside each device 
+
+3. Task 3 parses out the interface IP address in the ip_map. 
+    - Does so by parsing into the interface name index 
+    - Only does this "when" interface name is a key in the item ip_map 
+
+4. Builds a list of interface facts for each interfce 
+    - IP's, MAC, MTU, etc. 
+
+    #########################
+    # BUILD_IP_MAPPING.yml #
+    #########################
+
+1. Task 1 simply creating an IP to Interface map 
+    - This combines the k,v pair when the key is the ip address[name] and the value is the IP address[address]
+
+    #########################
+    # BUILD_IP_MAPPING.yml #
+    #########################
+
+1. Task 1 simply creating an IP to Interface map 
+    - This combines the k,v pair when the key is the ip address[name] and the value is the IP address[address]
+
+        
+    ########################
+    # EXPED_INVENTORY.yml #
+    ########################
+
+1. Task 1 establishes the initial API call to the device being passed by the variable {{ device_name }} from the WX survey
+
+2. Task 2 pulls in the build_ip_mapping playbook to map ip addresses to interfaces (include_tasks module references this playbook)
+    - This will loop over the entire json/results dictionary in the device's API call 
+
+3. Task 3 establishes an API call to the device to compile a list of all interfaces in the device
+
+4. Task 4 creates a structured data format of the returned API data 
+
+5. Task 5 establishes an API call to retrieve ALL data in the device
+
+6. Task 6 establishes an API call to only the specific "tenant" data in the device 
+
+7. *** LOST IN THE SAUCE ***
+    - This play is reaching into the returned data dictionary, and parsing out individual variables
+    - It is parsing into the device "item" (B-KL001-H-R) and grabbing specific information from the specified index
+
+8. Debug disply output for t-shoot purposes
+
+
