@@ -1,0 +1,28 @@
+boot-start-marker
+boot host unix:/sdb1/router.cfg
+boot-end-marker
+!
+service config
+!
+aaa new-model 
+!
+aaa session-id common
+!
+no ip domain lookup
+ip domain name painheals.com 
+!
+username commadmin privilege 15 secret password
+!
+bridge-domain 1
+bridge-domain 1000
+!
+interface BDI1
+ ip address 192.168.252.253 255.255.255.252
+!
+interface BDI1000
+ ip address 10.22.116.22 255.255.255.248
+!
+interface GigabitEthernet1
+ description LOCAL MGMT
+ ip address 10.211.211.1 255.255.255.248
+!

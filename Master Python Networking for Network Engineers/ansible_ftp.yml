@@ -1,0 +1,36 @@
+---
+
+  - name: UPLOAD IOS 17.03.03 TO CISCO DEVICES
+    hosts: iosxe
+    connection: network_cli
+    gather_facts: no 
+
+    vars: 
+      upgrade_ios_version: 17.03.03
+      new_ios_file_name: csr1000v-universalk9.17.03.03.SPA.bin
+      ansible_command_timeout: 1200
+
+    tasks: 
+
+      - name: PLA 1 IN TASK 1 - CHECK CURRENT IOS VERSION
+        ios_facts: 
+
+      - debug:
+          msg: 
+            - "Current IOS Version is {{ ansible_net_version }}"
+            - "Upgrade IOS Image is 17.03.03"
+            
+      - debug: 
+          msg: 
+            - "New IOS and current IOS are different"
+
+        when: ansible_net_version != upgrade_ios_version
+
+      - name: PLAY 2 IN TASK 1 - COPY NEW IOS FROM SERVER TO CSR 
+        cli_command: 
+          command: "copy ftp://ftpuser:ansible@192.168.0.152/home/ansible/Documents/{{ new_ios_file_name }} flash:{{ new_ios_file_name }}"
+          check_all: TRUE 
+          prompt: 
+            - "Destination filename"
+          answer: 
+            - "{{ new_ios_file_name }}"
