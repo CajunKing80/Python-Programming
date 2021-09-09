@@ -1,0 +1,26 @@
+[
+    {
+        "age": 24.0,
+        "interface": "GigabitEthernet1",
+        "ip": "192.168.0.83",
+        "mac": "80:FA:5B:5D:49:79"
+    },
+    {
+        "age": -1.0,
+        "interface": "GigabitEthernet1",
+        "ip": "192.168.0.152",
+        "mac": "50:00:00:01:00:00"
+    },
+    {
+        "age": 4.0,
+        "interface": "GigabitEthernet1",
+        "ip": "192.168.0.155",
+        "mac": "50:00:00:04:00:00"
+    },
+    {
+        "age": -1.0,
+        "interface": "GigabitEthernet2",
+        "ip": "192.168.99.1",
+        "mac": "50:00:00:01:00:01"
+    }
+]

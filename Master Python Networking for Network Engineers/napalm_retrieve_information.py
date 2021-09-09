@@ -13,6 +13,7 @@ ios = driver(
 ios.open()
 # start code here 
 
+print(dir(ios))
 
 output = ios.get_facts()
 dump=json.dumps(
