@@ -6,7 +6,8 @@ driver = get_network_driver('ios')
 optional_args = {'secret' : 'cisco'} #cisco enable password
 ios = driver(
     '192.168.0.152', 
-    'ansible', 'ansible', 
+    'ansible', 
+    'ansible', 
     optional_args=optional_args
     )
 
