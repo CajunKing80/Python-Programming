@@ -1,0 +1,691 @@
+Lab 01 - Working with Jinja Templates
+
+This guide provides all the necessary commands and tasks in this lab guide should be performed in order, as they might depend on files and packages installed beforehand.
+Task 1 - Build the base EOS configs
+Step 1
+
+In your terminal on the lab VM, change into the /home/ntc/labs/lab01 folder. Create and edit a file named inventory with the following contents (it should have four Arista devices grouped according to their role).
+
+[eos:children]
+eos_spines
+eos_leaves
+
+[eos_spines]
+eos-spine1
+eos-spine2
+
+[eos_leaves]
+eos-leaf1
+eos-leaf2
+
+Step 2
+
+Now that the inventory file is created, this task will build out the Ansible directory structure - all within the /home/ntc/labs/lab01 directory.
+
+Create the following directories (within lab01):
+
+    group_vars
+    templates
+
+ntc@ntc-training:lab01$ mkdir group_vars templates
+
+Your file structure should look like this while issuing the tree command:
+
+ntc@ntc-training:lab01$ tree
+.
+├── ansible.cfg
+├── group_vars
+├── inventory
+└── templates
+
+2 directories, 2 files
+
+Step 3
+
+You are now going to ensure that a directory exists for each device in scope. You'll do this by adding a task into a playbook to create a directory per device. This directory will store the configs generated in the next task.
+
+Create a playbook called vlans-01.yml in the lab01 directory.
+
+---
+
+  - name: GENERATE VLANS CONFIGS FOR EOS
+    hosts: eos
+    connection: local
+    gather_facts: false
+
+    tasks:
+
+      - name: ENSURE DIRECTORY EXISTS
+        file:
+          path: "./configs/{{ inventory_hostname }}"
+          state: directory
+
+Step 4
+
+Execute the vlans-01.yml playbook.
+
+ntc@ntc-training:lab01$ ansible-playbook -i inventory vlans-01.yml
+
+PLAY [GENERATE VLANS CONFIGS FOR EOS] ******************************************
+
+TASK [ENSURE DIRECTORY EXISTS] *************************************************
+changed: [eos-leaf1]
+changed: [eos-leaf2]
+changed: [eos-spine2]
+changed: [eos-spine1]
+
+PLAY RECAP *********************************************************************
+eos-leaf1                  : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-leaf2                  : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine1                 : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine2                 : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+Step 5
+
+Issue a tree command to see the directories that have been created.
+
+ntc@ntc-training:lab01$ tree
+.
+├── ansible.cfg
+├── configs
+│   ├── eos-leaf1
+│   ├── eos-leaf2
+│   ├── eos-spine1
+│   └── eos-spine2
+├── group_vars
+├── inventory
+├── templates
+└── vlans-01.yml
+
+7 directories, 3 files
+
+This sets you up to store different types of configs for each device throughout the lab.
+Step 6
+
+Now the base project structure is setup and you are ready to build EOS device configurations. You'll do this by creating the required YAML data and Jinja templates, and then render the two together to create configurations using the Ansible template module.
+
+Create a YAML file called group_vars/all.yml and store a vlans variable in there like this:
+
+---
+
+vlans:
+  - id: 10
+    name: web_vlan
+  - id: 20
+    name: app_vlan
+  - id: 30
+    name: db_vlan
+
+Step 7
+
+Add a Jinja template called vlans-1.j2 in the templates directory:
+
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+   name {{ vlan.name }}
+{% endfor %}
+
+Step 8
+
+Add a new task to the vlans-01.yml playbook to generate the required VLAN configurations for each Arista device:
+
+      - name: GENERATE VLAN CONFIGS 1
+        template:
+          src: vlans-1.j2
+          dest: "./configs/{{ inventory_hostname }}/vlans-1.conf"
+
+    Note: Ansible will automatically look inside the templates sub-directory when using the template module, e.g. you didn't need to write src: ./templates/vlans-1.j2.
+
+Step 9
+
+Execute the playbook.
+
+ntc@ntc-training:lab01$ ansible-playbook -i inventory vlans-01.yml
+
+PLAY [GENERATE VLANS CONFIGS FOR EOS] ******************************************
+
+TASK [ENSURE DIRECTORY EXISTS] *************************************************
+ok: [eos-spine2]
+ok: [eos-spine1]
+ok: [eos-leaf2]
+ok: [eos-leaf1]
+
+TASK [GENERATE VLAN CONFIGS 1] *************************************************
+changed: [eos-spine2]
+changed: [eos-spine1]
+changed: [eos-leaf2]
+changed: [eos-leaf1]
+
+PLAY RECAP *********************************************************************
+eos-leaf1                  : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-leaf2                  : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine1                 : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine2                 : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+Step 10
+
+Verify the configs were built with the tree command and inspect the file contents:
+
+ntc@ntc-training:lab01$ tree
+.
+├── ansible.cfg
+├── configs
+│   ├── eos-leaf1
+│   │   └── vlans-1.conf
+│   ├── eos-leaf2
+│   │   └── vlans-1.conf
+│   ├── eos-spine1
+│   │   └── vlans-1.conf
+│   └── eos-spine2
+│       └── vlans-1.conf
+├── group_vars
+│   └── all.yml
+├── inventory
+├── templates
+│   └── vlans-1.j2
+└── vlans-01.yml
+
+7 directories, 9 files
+
+Step 11
+
+Remove one of the VLAN names from the group_vars/all.yml files so the updated vlans variable looks like this:
+
+vlans:
+  - id: 10
+    name: web_vlan
+  - id: 20
+  - id: 30
+    name: db_vlan
+
+Step 12
+
+Re-run the playbook.
+
+ntc@ntc-training:lab01$ ansible-playbook -i inventory vlans-01.yml
+
+PLAY [GENERATE VLANS CONFIGS FOR EOS] ******************************************
+
+TASK [ENSURE DIRECTORY EXISTS] *************************************************
+ok: [eos-leaf2]
+ok: [eos-leaf1]
+ok: [eos-spine1]
+ok: [eos-spine2]
+
+TASK [GENERATE VLAN CONFIGS 1] *************************************************
+fatal: [eos-spine1]: FAILED! => {
+    "changed": false
+}
+
+MSG:
+
+AnsibleUndefinedVariable: 'dict object' has no attribute 'name'
+fatal: [eos-spine2]: FAILED! => {
+    "changed": false
+}
+
+MSG:
+
+AnsibleUndefinedVariable: 'dict object' has no attribute 'name'
+fatal: [eos-leaf1]: FAILED! => {
+    "changed": false
+}
+
+MSG:
+
+AnsibleUndefinedVariable: 'dict object' has no attribute 'name'
+fatal: [eos-leaf2]: FAILED! => {
+    "changed": false
+}
+
+MSG:
+
+AnsibleUndefinedVariable: 'dict object' has no attribute 'name'
+
+PLAY RECAP *********************************************************************
+eos-leaf1                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+eos-leaf2                  : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+eos-spine1                 : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+eos-spine2                 : ok=1    changed=0    unreachable=0    failed=1    skipped=0    rescued=0    ignored=0
+
+You should see that playbook fails because there is a missing key. The existing template assumes the name is always going to be there. That needs to be accounted for.
+Step 13
+
+Update the template to account for optional VLAN names using an if statement, but now save this as vlans-2.j2:
+
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+{% if vlan.get('name') %}
+   name {{ vlan.name }}
+{% endif %}
+{% endfor %}
+
+Take note of the conditional statement checking to see there is a name key with some value assigned to it.
+Step 14
+
+Update the playbook to account for the new template name. You'll need to update src parameter in the template task.
+
+      - name: GENERATE VLAN CONFIGS 1
+        template:
+          src: vlans-2.j2
+          dest: "./configs/{{ inventory_hostname }}/vlans-1.conf"
+
+Step 15
+
+Re-run the playbook.
+
+ntc@ntc-training:lab01$ ansible-playbook -i inventory vlans-01.yml
+
+PLAY [GENERATE VLANS CONFIGS FOR EOS] ******************************************
+
+TASK [ENSURE DIRECTORY EXISTS] *************************************************
+ok: [eos-spine1]
+ok: [eos-spine2]
+ok: [eos-leaf2]
+ok: [eos-leaf1]
+
+TASK [GENERATE VLAN CONFIGS 1] *************************************************
+changed: [eos-spine1]
+changed: [eos-spine2]
+changed: [eos-leaf2]
+changed: [eos-leaf1]
+
+PLAY RECAP *********************************************************************
+eos-leaf1                  : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-leaf2                  : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine1                 : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine2                 : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+Step 16
+
+Open at least one of the new configurations and ensure the correct configuration is there.
+
+ntc@ntc-training:lab01$ cat configs/eos-leaf1/vlans-1.conf
+vlan 10
+   name web_vlan
+vlan 20
+vlan 30
+   name db_vlan
+
+Task 2 - Manage Jinja Whitespace
+
+In the last task, you used the following template as vlans-2.j2:
+
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+{% if vlan.get('name') %}
+   name {{ vlan.name }}
+{% endif %}
+{% endfor %}
+
+Jinja template syntax doesn't follow Python indentation practices, since it is a pure text templating engine.
+
+This task explores using indentation in Jinja templates to make them more readable, while learning how to handle whitespace.
+Step 1
+
+If you were to follow block-based indentation for the template previously used, you would end up with the following:
+
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+  {% if vlan.get('name') %}
+    name {{ vlan.name }}
+  {% endif %}
+{% endfor %}
+
+You should notice the subtle difference where the if statement is indented under the for block.
+
+Take the template above with the indented if statement and save it as vlans-3a.j2.
+Step 2
+
+ADD (do not replace) a task to the vlans-01.yml playbook to generate VLAN configs using this template.
+
+      - name: GENERATE CONFIGS USING INDENTED IF - 1
+        template:
+          src: vlans-3a.j2
+          dest: ./configs/{{ inventory_hostname }}/vlans-3a.conf
+
+Step 3
+
+Execute the playbook.
+
+ntc@ntc-training:lab01$ ansible-playbook -i inventory vlans-01.yml
+
+PLAY [GENERATE VLANS CONFIGS FOR EOS] ******************************************
+
+TASK [ENSURE DIRECTORY EXISTS] *************************************************
+ok: [eos-leaf2]
+ok: [eos-leaf1]
+ok: [eos-spine2]
+ok: [eos-spine1]
+
+TASK [GENERATE VLAN CONFIGS 1] *************************************************
+ok: [eos-spine1]
+ok: [eos-leaf2]
+ok: [eos-leaf1]
+ok: [eos-spine2]
+
+TASK [GENERATE CONFIGS USING INDENTED IF - 1] **********************************
+changed: [eos-spine2]
+changed: [eos-spine1]
+changed: [eos-leaf2]
+changed: [eos-leaf1]
+
+PLAY RECAP *********************************************************************
+eos-leaf1                  : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-leaf2                  : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine1                 : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine2                 : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+Step 4
+
+Verify the configs that are generated. You should see the following:
+
+ntc@ntc-training:lab01$ cat configs/eos-leaf1/vlans-3a.conf
+vlan 10
+      name web_vlan
+  vlan 20
+  vlan 30
+      name db_vlan
+
+This has extra white space at the front of the line that should not really be there. We need to strip leading white space, since the added indentation in the template is causing the resulting config to be wrong.
+Step 5
+
+Add the line #jinja2: lstrip_blocks: True to the first line of the previous template, but save it as vlans-3b.j2 so we can easily compare and contrast the resulting configuration file.
+
+This is what should be in the vlans-3b.j2 file:
+
+#jinja2: lstrip_blocks: True
+
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+  {% if vlan.get('name') %}
+   name {{ vlan.name }}
+  {% endif %}
+{% endfor %}
+
+Step 6
+
+Add a task to the playbook to generate VLAN configs using this template.
+
+      - name: GENERATE CONFIGS USING INDENTED IF - 2
+        template:
+          src: vlans-3b.j2
+          dest: ./configs/{{ inventory_hostname }}/vlans-3b.conf
+
+Step 7
+
+Execute the playbook.
+
+ntc@ntc-training:lab01$ ansible-playbook -i inventory vlans-01.yml
+
+PLAY [GENERATE VLANS CONFIGS FOR EOS] ******************************************
+
+TASK [ENSURE DIRECTORY EXISTS] *************************************************
+ok: [eos-spine1]
+ok: [eos-leaf2]
+ok: [eos-spine2]
+ok: [eos-leaf1]
+
+TASK [GENERATE VLAN CONFIGS 1] *************************************************
+ok: [eos-spine2]
+ok: [eos-leaf2]
+ok: [eos-spine1]
+ok: [eos-leaf1]
+
+TASK [GENERATE CONFIGS USING INDENTED IF - 1] **********************************
+ok: [eos-spine2]
+ok: [eos-spine1]
+ok: [eos-leaf1]
+ok: [eos-leaf2]
+
+TASK [GENERATE CONFIGS USING INDENTED IF - 2] **********************************
+changed: [eos-spine2]
+changed: [eos-spine1]
+changed: [eos-leaf2]
+changed: [eos-leaf1]
+
+PLAY RECAP *********************************************************************
+eos-leaf1                  : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-leaf2                  : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine1                 : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine2                 : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+Step 8
+
+Open, and then compare and contrast, the configuration files created: vlans-3a.conf and vlans-3b.conf.
+
+The Jinja rendering engine has now removed (stripped) the left side whitespace from any indented code blocks - in this case, the if block.
+
+    Note: you can also control the lstrip_blocks parameter from the template module arguments in Ansible.
+
+Task 3 - Extend the VLANs YAML Data and Template
+
+Building on previous work, this task will update the YAML data to allow the template designer to auto-generate commands to either configure or remove a VLAN from a switch.
+Step 1
+
+Update the vlans variable in group_vars/all.yml so it has one more VLAN. In addition, ensure all VLANs have a state parameter. This will be used to build the right configuration for that VLAN. When the state is set to present, the configs will get built to ensure the VLAN exists on the switch; when the state is set to absent, the config will get built to remove the VLAN from the switch.
+
+---
+
+vlans:
+  - id: 10
+    name: web_vlan
+    state: present
+  - id: 20
+    state: absent
+  - id: 30
+    name: db_vlan
+    state: present
+  - id: 40
+    state: absent
+
+For example, the configs desired for this data should look like the following:
+
+vlan 10
+    name web_vlan
+no vlan 20
+vlan 30
+    name db_vlan
+no vlan 40
+
+Step 2
+
+Create a new template that checks for the state parameter using good indentation for readability. Save this template as vlans-4a.j2:
+
+{% for vlan in vlans %}
+  {% if vlan.state == "present" %}
+vlan {{ vlan.id }}
+    {% if vlan.get('name') %}
+    name {{ vlan.name }}
+    {% endif %}
+  {% elif vlan.state == "absent" %}
+no vlan {{ vlan.id }}
+  {% endif %}
+{% endfor %}
+
+Step 3
+
+Add the following task to the vlans-01.yml playbook to use the new template:
+
+      - name: GENERATE CONFIGS - 4A
+        template:
+          src: vlans-4a.j2
+          dest: ./configs/{{ inventory_hostname }}/vlans-4a.conf
+
+Step 4
+
+Execute the playbook.
+
+ntc@ntc-training:lab01$ ansible-playbook -i inventory vlans-01.yml
+
+PLAY [GENERATE VLANS CONFIGS FOR EOS] ******************************************
+
+TASK [ENSURE DIRECTORY EXISTS] *************************************************
+ok: [eos-leaf2]
+ok: [eos-spine1]
+ok: [eos-spine2]
+ok: [eos-leaf1]
+
+TASK [GENERATE VLAN CONFIGS 1] *************************************************
+changed: [eos-spine1]
+changed: [eos-spine2]
+changed: [eos-leaf2]
+changed: [eos-leaf1]
+
+TASK [GENERATE CONFIGS USING INDENTED IF - 1] **********************************
+changed: [eos-spine1]
+changed: [eos-leaf1]
+changed: [eos-spine2]
+changed: [eos-leaf2]
+
+TASK [GENERATE CONFIGS USING INDENTED IF - 2] **********************************
+changed: [eos-spine2]
+changed: [eos-spine1]
+changed: [eos-leaf2]
+changed: [eos-leaf1]
+
+TASK [GENERATE CONFIGS - 4A] ***************************************************
+changed: [eos-spine1]
+changed: [eos-spine2]
+changed: [eos-leaf1]
+changed: [eos-leaf2]
+
+PLAY RECAP *********************************************************************
+eos-leaf1                  : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-leaf2                  : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine1                 : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine2                 : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+Step 5
+
+Open the new vlans-4a.conf files and look at the indentation:
+
+ntc@ntc-training:lab01$ cat configs/eos-leaf1/vlans-4a.conf
+  vlan 10
+        name web_vlan
+        no vlan 20
+    vlan 30
+        name db_vlan
+        no vlan 40
+
+Step 6
+
+Add #jinja2: lstrip_blocks: True to the first line of the vlans-4a.j2 template and then save it as vlans-4b.j2.
+
+#jinja2: lstrip_blocks: True
+
+{% for vlan in vlans %}
+  {% if vlan.state == "present" %}
+vlan {{ vlan.id }}
+    {% if vlan.get('name') %}
+   name {{ vlan.name }}
+    {% endif %}
+  {% elif vlan.state == "absent" %}
+no vlan {{ vlan.id }}
+  {% endif %}
+{% endfor %}
+
+Step 7
+
+Add the following task to the vlans-01.yml playbook to use the new template:
+
+      - name: GENERATE CONFIGS - 4B
+        template:
+          src: vlans-4b.j2
+          dest: ./configs/{{ inventory_hostname }}/vlans-4b.conf
+
+Step 8
+
+Execute the playbook.
+
+ntc@ntc-training:lab01$ ansible-playbook -i inventory vlans-01.yml
+
+PLAY [GENERATE VLANS CONFIGS FOR EOS] ******************************************
+
+TASK [ENSURE DIRECTORY EXISTS] *************************************************
+ok: [eos-leaf1]
+ok: [eos-leaf2]
+ok: [eos-spine1]
+ok: [eos-spine2]
+
+TASK [GENERATE VLAN CONFIGS 1] *************************************************
+ok: [eos-leaf1]
+ok: [eos-spine2]
+ok: [eos-leaf2]
+ok: [eos-spine1]
+
+TASK [GENERATE CONFIGS USING INDENTED IF - 1] **********************************
+ok: [eos-spine2]
+ok: [eos-spine1]
+ok: [eos-leaf1]
+ok: [eos-leaf2]
+
+TASK [GENERATE CONFIGS USING INDENTED IF - 2] **********************************
+ok: [eos-spine2]
+ok: [eos-spine1]
+ok: [eos-leaf1]
+ok: [eos-leaf2]
+
+TASK [GENERATE CONFIGS - 4A] ***************************************************
+ok: [eos-spine1]
+ok: [eos-leaf2]
+ok: [eos-leaf1]
+ok: [eos-spine2]
+
+TASK [GENERATE CONFIGS - 4B] ***************************************************
+changed: [eos-spine1]
+changed: [eos-spine2]
+changed: [eos-leaf2]
+changed: [eos-leaf1]
+
+PLAY RECAP *********************************************************************
+eos-leaf1                  : ok=6    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-leaf2                  : ok=6    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine1                 : ok=6    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+eos-spine2                 : ok=6    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+Step 9
+
+Verify the vlans-4b.conf configs created. This should be what you want to see:
+
+ntc@ntc-training:lab01$ cat configs/eos-leaf1/vlans-4b.conf
+vlan 10
+    name web_vlan
+no vlan 20
+vlan 30
+    name db_vlan
+no vlan 40
+
+Step 10
+
+If you don't use the #jinja2: lstrip_blocks: True line at the top of your template, you can still have a well formatted config file if no indentation is used for the if and for blocks in this example.
+
+Add one more template with the following:
+
+{% for vlan in vlans %}
+{% if vlan.state == "present" %}
+vlan {{ vlan.id }}
+{% if vlan.get('name') %}
+   name {{ vlan.name }}
+{% endif %}
+{% elif vlan.state == "absent" %}
+no vlan {{ vlan.id }}
+{% endif %}
+{% endfor %}
+
+This template should be saved as vlans-4c.j2.
+Step 11
+
+Add the required task in the playbook to use the template and execute it by running ansible-playbook -i inventory vlans-01.yml.
+
+      - name: GENERATE CONFIGS - 4C
+        template:
+          src: vlans-4c.j2
+          dest: ./configs/{{ inventory_hostname }}/vlans-4c.conf
+
+Step 12
+
+If you compare the 4c and 4b configs there should be no differences.
+
+ntc@ntc-training:lab01$ diff configs/eos-leaf1/vlans-4c.conf configs/eos-leaf1/vlans-4b.conf
+ntc@ntc-training:lab01$

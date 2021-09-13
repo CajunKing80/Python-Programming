@@ -1,0 +1,304 @@
+Lab 02 - Exploring and Testing Jinja Filters
+
+This guide provides all the necessary commands and tasks in this lab guide should be performed in order, as they might depend on files and packages installed beforehand.
+Task 1
+
+For each of the filtering/querying tasks in this lab, take the time to look at the data they apply to and understand what operations are happening behind the scenes to arrive at the printed result.
+Step 1
+
+In your terminal on the lab VM, change into the /home/ntc/labs/lab02 folder. Create the following playbook and save it as jinja-filters.yml:
+
+---
+
+- name: LEARNING JINJA FILTERS
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    interface_name: Ethernet1
+    interface_state: false
+    interfaces:
+      - Eth1
+      - Eth2
+      - Eth3
+    interfaces_config:
+      - name: Eth1
+        speed: 1000
+        duplex: full
+        status: true
+      - name: Eth2
+        speed: 1000
+        duplex: full
+        status: true
+      - name: Eth3
+        speed: 1000
+        duplex: full
+        status: false
+    vlans:
+      - id: 10
+        name: web_vlan
+      - id: 20
+        name: app_vlan
+      - id: 30
+        name: db_vlan
+
+  tasks:
+
+    Note: The following steps will perform various operations on this structured data. Here it is provided inside of the playbook, but in other cases it may come as a result of a command you execute remotely on network devices or via an API call. Be it YAML or JSON, it will always be converted into Python internal data structures, usually nested dictionaries and lists, and that is what you are working with.
+
+Step 2
+
+Add the following debug task:
+
+    - name: SLICE A STRING (OR A LIST)
+      debug:
+        var: interface_name[0:2]
+
+Step 3
+
+Execute the playbook. Take note that this syntax returns the first two characters of a string (or first two elements of a list).
+
+ntc@ntc-training:lab02$ ansible-playbook jinja-filters.yml
+[WARNING]: No inventory was parsed, only implicit localhost is available
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match 'all'
+
+PLAY [LEARNING JINJA FILTERS] ********************************************************************************************
+
+TASK [SLICE A STRING (OR A LIST)] ****************************************************************************************
+ok: [localhost] => {
+    "interface_name[0:2]": "Et"
+}
+
+PLAY RECAP ***************************************************************************************************************
+localhost                  : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+    Note: You do not need an inventory file since all the tasks in this lab are run on localhost which is implicitly defined. Ansible will warn you about this as you can see in the output above.
+
+Step 4
+
+Add the following debug tasks:
+
+    - name: VIEW LENGTH OF INTERFACES LIST
+      debug:
+        var: interfaces | length
+
+    - name: VIEW LENGTH OF INTERFACES CONFIG LIST
+      debug:
+        var: interfaces_config | length
+
+Step 5
+
+Execute the playbook. Here is the output you should see:
+
+ntc@ntc-training:lab02$ ansible-playbook jinja-filters.yml
+[WARNING]: No inventory was parsed, only implicit localhost is available
+[WARNING]: provided hosts list is empty, only localhost is available. Note that the implicit localhost does not match
+'all'
+
+PLAY [LEARNING JINJA FILTERS] ********************************************************************************************
+
+TASK [SLICE A STRING (OR A LIST)] ****************************************************************************************
+ok: [localhost] => {
+    "interface_name[0:2]": "Et"
+}
+
+TASK [VIEW LENGTH OF INTERFACES LIST] ************************************************************************************
+ok: [localhost] => {
+    "interfaces | length": "3"
+}
+
+TASK [VIEW LENGTH OF INTERFACES CONFIG LIST] *****************************************************************************
+ok: [localhost] => {
+    "interfaces_config | length": "3"
+}
+
+PLAY RECAP ***************************************************************************************************************
+localhost                  : ok=3    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+    Note: The length filter is simply used to return the length or quantity of elements in a list in this use case. You can also use it to check the quantity of items in a dictionary, quantity of characters in a string etc.
+
+Step 6
+
+Add the following debug task:
+
+    - name: GET ELEMENTS THAT HAVE A TRUE VALUE FOR STATUS (RETURNS GENERATOR)
+      debug:
+        var: interfaces_config | selectattr("status")
+
+Step 7
+
+Execute the playbook. Here is the relevant output you should see:
+
+TASK [GET ELEMENTS THAT HAVE A TRUE VALUE FOR STATUS (RETURNS GENERATOR)] ************************************************
+ok: [localhost] => {
+    "interfaces_config | selectattr(\"status\")": "<generator object select_or_reject at 0x7fa78c506970>"
+}
+
+    Note: The selectattr filter is returning an actual Python class object. The next step will show how to consume this and convert it to be a list.
+
+Step 8
+
+Add the following debug task to your playbook:
+
+    - name: GET ELEMENTS THAT HAVE A TRUE VALUE FOR STATUS AS A LIST
+      debug:
+        var: interfaces_config | selectattr("status") | list
+
+Step 9
+
+Execute the playbook by running ansible-playbook jinja-filters.yml. Here is the relevant output you should see towards the end:
+
+TASK [GET ELEMENTS THAT HAVE A TRUE VALUE FOR STATUS AS A LIST] **********************************************************
+ok: [localhost] => {
+    "interfaces_config | selectattr(\"status\") | list": [
+        {
+            "duplex": "full",
+            "name": "Eth1",
+            "speed": 1000,
+            "status": true
+        },
+        {
+            "duplex": "full",
+            "name": "Eth2",
+            "speed": 1000,
+            "status": true
+        }
+    ]
+}
+
+    Note: The selectattr returns a generator object that contained all elements in which the status key was true. We then used the list filter to convert that generator object into a something more usable, that is a list.
+
+Step 10
+
+Add the following debug task:
+
+    - name: RETURN LIST OF ALL NAME KEYS IN THE INTERFACES_CONFIG LIST OF DICTIONARIES
+      debug:
+        var: interfaces_config | map(attribute="name") | list
+
+Step 11
+
+Execute the playbook by running ansible-playbook jinja-filters.yml. Here is the relevant output you should see towards the end:
+
+TASK [RETURN LIST OF ALL NAME KEYS IN THE INTERFACES_CONFIG LIST OF DICTIONARIES] ****************************************
+ok: [localhost] => {
+    "interfaces_config | map(attribute=\"name\") | list": [
+        "Eth1",
+        "Eth2",
+        "Eth3"
+    ]
+}
+
+    Note: The map filter with the attribute key can be used to return a list of values when the original object is a list of dictionaries. This is helpful in the use case you just care about one key in a large list of dictionaries. We'll see one more example in the next step.
+
+Step 12
+
+Add the following debug task to the playbook:
+
+    - name: RETURN LIST OF ALL VLAN IDS IN LIST OF DICTIONARIES WITH ID KEYs
+      debug:
+        var: vlans | map(attribute="id") | list
+
+Step 13
+
+Execute the playbook by running ansible-playbook jinja-filters.yml. Here is the relevant output you should see towards the end:
+
+TASK [RETURN LIST OF ALL VLAN IDS IN LIST OF DICTIONARIES WITH ID KEYs] **************************************************
+ok: [localhost] => {
+    "vlans | map(attribute=\"id\") | list": [
+        10,
+        20,
+        30
+    ]
+}
+
+    Note: Just like the previous example, there was a list of dictionaries, but we only cared about the VLAN IDs. So this filter helps us just create a list of all VLAN ID, e.g. the id key in this example.
+
+Step 14
+
+Add the following debug task:
+
+    - name: RETURN JUST LIST OF VALUES THAT ARE TRUE FOR INTERFACE STATUS AS A LIST
+      debug:
+        var: interfaces_config | selectattr("status") | map(attribute="name") | list
+
+Step 15
+
+Execute the playbook by running ansible-playbook jinja-filters.yml. Here is the relevant output you should see towards the end:
+
+TASK [RETURN JUST LIST OF VALUES THAT ARE TRUE FOR INTERFACE STATUS AS A LIST] *******************************************
+ok: [localhost] => {
+    "interfaces_config | selectattr(\"status\") | map(attribute=\"name\") | list": [
+        "Eth1",
+        "Eth2"
+    ]
+}
+
+    Note: In Step 9 selectattr(\"status\") returned all elements that had status equal to true. But this included the full dictionary element. Now, we are extracting the name key element and creating a new list of just those interface names that match the criteria.
+
+Step 16
+
+Add the following debug task to your playbook:
+
+    - name: CONVERT BOOLEAN T/F TO SOMETHING MORE CONTEXTUAL FOR NETWORKING
+      debug:
+        var: interface_state | ternary("up", "down")
+
+Step 17
+
+Execute the playbook by running ansible-playbook jinja-filters.yml. Here is the relevant output you should see towards the end:
+
+TASK [CONVERT BOOLEAN T/F TO SOMETHING MORE CONTEXTUAL FOR NETWORKING] ***************************************************
+ok: [localhost] => {
+    "interface_state | ternary(\"up\", \"down\")": "down"
+}
+
+    Note: It's quite common to use True and False for programming and automation, but in reality for networking, this may map to up/down status, shut/no shut, and other enumerations like on/off. You can use the ternary filter to map boolean values to an enumeration of your choice. In this case, we map true to up and then false to down.
+
+Step 18
+
+Add the following debug task to your playbook:
+
+    - name: LOOP THROUGH INTERFACES CHECKING INTERFACE STATUS (up/down)
+      debug:
+        msg: "{{ item['name'] }} is {{ item['status'] | ternary('up', 'down') }}"
+      loop: "{{ interfaces_config }}"
+
+Step 19
+
+Execute the playbook by running ansible-playbook jinja-filters.yml. Here is the relevant output you should see towards the end:
+
+TASK [LOOP THROUGH INTERFACES CHECKING INTERFACE STATUS (up/down)] *******************************************************
+ok: [localhost] => (item={'name': 'Eth1', 'speed': 1000, 'duplex': 'full', 'status': True}) => {
+    "msg": "Eth1 is up"
+}
+ok: [localhost] => (item={'name': 'Eth2', 'speed': 1000, 'duplex': 'full', 'status': True}) => {
+    "msg": "Eth2 is up"
+}
+ok: [localhost] => (item={'name': 'Eth3', 'speed': 1000, 'duplex': 'full', 'status': False}) => {
+    "msg": "Eth3 is down"
+}
+
+    Note: This one is no different than the previous task, but showing it in the context of a loop, while printing additional helpful information.
+
+Step 20
+
+Add the following debug task to your playbook:
+
+    - name: RETURN LIST OF ALL INTERFACE SPEEDS
+      debug:
+        var: interfaces_config | map(attribute="speed") | list | unique
+
+Step 21
+
+Execute the playbook by running ansible-playbook jinja-filters.yml. Here is the relevant output you should see towards the end:
+
+TASK [RETURN LIST OF ALL INTERFACE SPEEDS] *******************************************************************************
+ok: [localhost] => {
+    "interfaces_config | map(attribute=\"speed\") | list | unique": [
+        1000
+    ]
+}
+
+    Note: The goal here is to get a list of unique values from a given key. In this case, all interfaces have a speed of 1000, so that is the only result. Make a change to one of the speeds and re-run the playbook!

@@ -1,0 +1,236 @@
+Lab 01.5 - Practicing Jinja Whitespace Management
+
+The goals of this bonus lab are to observe what is the default whitespace rendering behavior in Jinja and practice using the various operators and rendering options to achieve the intended result.
+
+For this lab, you will use an online Jinja renderer for fast feedback on modifications and its helpful graphical representation of whitespace.
+
+The official Jinja project documentation on Whitespace Control should also be kept handy.
+Task 01
+Step 1
+
+In your web browser, navigate to the online Jinja renderer.
+Step 2
+
+Paste the following data into the Jinja2 Data text area.
+
+---
+interfaces:
+ - name: Loopback0
+   type: layer3
+   ip: 10.255.255.1/32
+ - name: Ethernet1
+   type: layer2_access
+   access_vlan: 20
+ - name: PortChannel40
+   type: layer2_trunk
+   native_vlan: 99
+   allowed_vlans: "20, 50, 60"
+
+Step 3
+
+Paste the following template into the Jinja2 Template text area.
+
+{% for intf in interfaces %}
+interface {{ intf['name'] }}
+ {% if intf['type'] == 'layer3' %}
+ ip address {{ intf['ip'] }}
+ {% elif intf['type'] == 'layer2_access' %}
+ switchport mode access
+ switchport access vlan 20
+ {% elif intf['type'] == 'layer2_trunk' %}
+ switchport mode trunk
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan {{ intf['native_vlan'] }}
+ switchport trunk allowed vlan {{ intf['allowed_vlans'] }}
+ {% endif %}
+!
+{% endfor %}
+
+Step 4
+
+Render the template and compare the template to its result in the Rendered Template text area on the right. Notice how much extra whitespace is added to the output.
+Step 5
+
+Enable the Show whitespaces toggle to make all of the whitespace visible.
+
+You should see the extra new lines and all the additional spaces inserted on some lines.
+
+Step 6
+
+You will now use indentation within expression blocks and manual whitespace control to improve this output.
+
+After you're finished, your output should match the one shown in the screenshot below, with the Show whitespaces toggle enabled. Use only manual block-based whitespace control (e.g. {%- or -%}) to solve this challenge!
+
+    Operator - placed at the end of the block delimiter will strip all whitespace following the delimiter.
+    Operator - placed at the start of the block delimiter will strip all whitespace preceding the delimiter.
+
+Reveal Solution
+
+Add - manual whitespace stripping operators at the end of the {% for %} block and in the front of the {% if %}, {% elif %}, {% endif %} blocks.
+
+{% for intf in interfaces -%}
+interface {{ intf['name'] }}
+ {%- if intf['type'] == 'layer3' %}
+ ip address {{ intf['ip'] }}
+ {%- elif intf['type'] == 'layer2_access' %}
+ switchport mode access
+ switchport access vlan 20
+ {%- elif intf['type'] == 'layer2_trunk' %}
+ switchport mode trunk
+ switchport trunk encapsulation dot1q
+ switchport trunk native vlan {{ intf['native_vlan'] }}
+ switchport trunk allowed vlan {{ intf['allowed_vlans'] }}
+ {%- endif %}
+!
+{% endfor %}
+
+Task 2
+Step 1
+
+In your web browser, navigate to the online Jinja renderer.
+Step 2
+
+Paste the following data into the Jinja2 Data text area.
+
+---
+interfaces:
+ - name: Loopback0
+   type: layer3
+   ip: 10.255.255.1/32
+ - name: Ethernet1
+   type: layer2_access
+   access_vlan: 20
+ - name: PortChannel40
+   type: layer2_trunk
+   native_vlan: 99
+   allowed_vlans: "all"
+ - name: PortChannel50
+   type: layer2_trunk
+   native_vlan: 85
+   allowed_vlans: "none"
+ - name: PortChannel60
+   type: layer2_trunk
+   native_vlan: 85
+   allowed_vlans: "85, 88, 90"
+
+Step 3
+
+Paste the following template into the Jinja2 Template text area.
+
+{% for intf in interfaces %}
+interface {{ intf['name'] }}
+ {% if intf['type'] == 'layer3' %}
+ ip address {{ intf['ip'] }}
+ {% elif intf['type'] == 'layer2_access' %}
+ switchport mode access
+ switchport access vlan 20
+ {% elif intf['type'] == 'layer2_trunk' %}
+ switchport mode trunk
+  {% if intf['native_vlan'] is defined %}
+ switchport trunk native vlan {{ intf['native_vlan'] }}
+  {% endif %}
+  {% if intf['allowed_vlans'] == 'none' %}
+ switchport trunk allowed vlan none
+  {% elif intf['allowed_vlans'] == 'all' %}
+ switchport trunk allowed vlan all
+  {% else %}
+ switchport trunk allowed vlan {{ intf['allowed_vlans'] }}
+  {% endif %}
+ {% endif %}
+!
+{% endfor %}
+
+Step 4
+
+Render the template and compare the template to its result in the Rendered Template text area on the right. Notice how much extra whitespace is added to the output.
+
+    Note: Click on the Show whitespaces toggle to make all of the whitespace visible.
+
+Step 5
+
+You will now use indentation within expression blocks and manual whitespace control to improve this output.
+
+After you're finished, your output should match the one shown in the screenshot below, with the Show whitespaces toggle enabled. Use only manual block-based whitespace control (e.g. {%- or -%}) to solve this challenge!
+
+    Hint: Move the indentation preceding a block that is used for the hierarchy of code from the outside to the inside of the block statement so it does not get rendered.
+
+Reveal Solution
+Task 3
+Step 1
+
+In your web browser, navigate to the online Jinja renderer.
+Step 2
+
+Paste the following data into the Jinja2 Data text area.
+
+---
+interfaces:
+ - name: Loopback0
+   type: layer3
+   ip: 10.255.255.1/32
+ - name: Ethernet1
+   type: layer2_access
+   access_vlan: 20
+ - name: PortChannel40
+   type: layer2_trunk
+   native_vlan: 99
+   allowed_vlans: "all"
+ - name: PortChannel50
+   type: layer2_trunk
+   native_vlan: 85
+   allowed_vlans: "none"
+ - name: PortChannel60
+   type: layer2_trunk
+   native_vlan: 85
+   allowed_vlans: "85, 88, 90"
+
+Step 3
+
+Paste the below template into the Jinja2 Template text area.
+
+{% for intf in interfaces %}
+interface {{ intf['name'] }}
+ {% if intf['type'] == 'layer3' %}
+ ip address {{ intf['ip'] }}
+ {% elif intf['type'] == 'layer2_access' %}
+ switchport mode access
+ switchport access vlan 20
+ {% elif intf['type'] == 'layer2_trunk' %}
+ switchport mode trunk
+  {% if intf['native_vlan'] is defined %}
+ switchport trunk native vlan {{ intf['native_vlan'] }}
+  {% endif %}
+  {% if intf['allowed_vlans'] == 'none' %}
+ switchport trunk allowed vlan none
+  {% elif intf['allowed_vlans'] == 'all' %}
+ switchport trunk allowed vlan all
+  {% else %}
+ switchport trunk allowed vlan {{ intf['allowed_vlans'] }}
+  {% endif %}
+ {% endif %}
+!
+{% endfor %}
+
+Step 4
+
+Render the template and take a screenshot of the output with all whitespace visible.
+Step 5
+
+Now enable the Trim option in the Rendering options section and render the template again.
+
+Observe what happened to the new lines and spaces. Use the screenshot from the previous task to compare the differences.
+Step 5
+
+Next, also enable the Lstrip option in the Rendering options section and render the template.
+
+Does the output look better now? Make sure whitespace is visible and see what changed compared to the Trim only option.
+
+Take a screenshot of the output. You'll use it for comparison in the next step.
+Step 6
+
+Disable the Lstrip option but leave the Trim option enabled.
+
+Move indentation from outside of Jinja {% %} delimiters to the inside of block tags.
+
+Render the template, make whitespaces visible and compare the output to the output from Step 5. Can you see any differences?
+Reveal Solution
