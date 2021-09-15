@@ -1,0 +1,654 @@
+Lab 10 - Making the VRF Module Idempotent and Adding Support for Check Mode
+
+This lab will use the same custom module from the previous lab that manages a VRF's configuration allowing you to change its description. The focus is now on understanding how to create an idempotent module and enabling it to perform dry-runs as well (check mode). The previous lab focused on making configuration changes any time the play is executed, but this time the module will only make changes if the configuration being sent does not exist.
+
+This requires rewriting all of the code that interacts with the IOSXE API since there is additional logic necessary to first check the device's state before making (if any) changes.
+Task 1 - Rewrite the VRF module to make it idempotent
+
+You are starting from a partially written module based on the previous lab. Its API code has been removed, but the module documentation strings and parameters are staying the same. The focus now is on writing the code to achieve the following goals:
+
+    Retrieve existing (if any) VRF configuration on the device.
+    Compare existing with intended configuration.
+    Make only necessary changes (e.g. if VRF needs to be created or description must change).
+    If Ansible check-mode is enabled, do not make any changes, but report back if any changes would be made (dry-run).
+
+Step 1
+
+In your terminal on the lab workstation, change into the /home/ntc/lab10 folder, checking that it contains the following files:
+
+    ansible.cfg
+    inventory
+    modules/iosxe_rest_vrf.py - this is the module scaffolding based on the previous lab that you will edit.
+    pb_vrf_descriptions.yml - a playbook using the module to test it.
+
+ntc@ntc-training:~$ cd /home/ntc/labs/lab10
+ntc@ntc-training:lab10$ tree
+.
+├── ansible.cfg
+├── inventory
+├── modules
+│   └── iosxe_rest_vrf.py
+└── pb_vrf_descriptions.yml
+
+1 directory, 4 files
+
+Step 2
+
+In your editor, open the iosxe_rest_vrf.py file and review its contents carefully - the starting point is very similar to the module you built in the previos lab.
+Step 3
+
+Identify the commented block (lines 100-102) since that's where you will be writing the new code.
+
+##########################################
+# NEW CODE WITH IDEMPOTENT LOGIC GOES HERE
+##########################################
+
+Step 4
+
+First of all, you want to know what's the actual state of the device. To find out if the VRF is already configured or not, whether it has a description or not (and what is the value), you need to query the IOSXE REST API for the configuration of the VRF name provided to the Ansible module.
+
+Since the url variable is already built, add the GET request code after it.
+
+    # manages vrf by name
+    url = f"{base_url}/vrf/definition={module.params['name']}"
+
+    # try a GET request to the API to see what configuration is already there
+    get_response = requests.get(
+        url,
+        headers=headers,
+        auth=auth,
+        verify=module.params["verify"],
+    )
+
+    Note: If you ever get confused as to where code should be added, Step 8 below contains the full listing of the final code in the iosxe_rest_vrf.py script.
+
+Step 5
+
+Add the following code after the get_response is executed.
+
+    if get_response.status_code == 404:
+        # the VRF does not exist on the device
+        configured_vrf = None
+        result["existing_config"] = None
+    elif get_response.ok:
+        # the VRF does exist, so use its configuration
+        configured_vrf = get_response.json()
+        result["existing_config"] = get_response.json()
+    else:
+        # any other code means an error, so module should fail
+        result["msg"] = f"API request failed with code {response.status_code}"
+        module.fail_json(**result)
+
+You are dealing with three possible outcomes based on the actual device state:
+
+    The VRF is not configured (API returns a 404 error).
+    The VRF is configured and the API call is successful (2xx), so you store the JSON configuration in the configured_vrf variable.
+    The API returns any other error code, so you fail the module and return the message to Ansible.
+
+The result["existing_config"] key is set to return some useful troubleshooting data to Ansible once the module is finished executing - this is data you would see for example when running ansible-playbook with the verbose -v flag.
+
+    Note: If you ever get confused as to where code should be added, Step 8 below contains the full listing of the final code in the iosxe_rest_vrf.py script.
+
+Step 6
+
+Continue adding the code shown below after the previous step's code. The goal here is to figure out what is the difference between the device configuration and your intended state, so you can build the payload to send to the API (but only if any changes need to be made).
+
+    The first case is when the VRF is not configured on the device (configured_vrf == None)
+        This means you need to configure the VRF as specified in the module parameters and also (optionally) set the description if defined.
+    The second case is when the VRF exists on the device with the configuration contained in the configured_vrf variable.
+        Since the VRF is defined, the only potential changes would be to its description.
+        Take some time to map the logic in the code - you want to modify the description only if it is 1. defined in the module parameters, and 2. different from what is on the device itself.
+
+    # prepare the payload to only make the necessary changes
+    if configured_vrf == None:
+        # need to create the VRF and optionally set the description
+        intended_vrf = {
+            "Cisco-IOS-XE-native:definition": {"name": f"{module.params['name']}"}
+        }
+
+        # only set if it's defined since an empty description
+        # is not acceptable by the API
+        if module.params["description"]:
+            intended_vrf["Cisco-IOS-XE-native:definition"][
+                "description"
+            ] = f"{module.params['description']}"
+
+        # mark the module as having made changes
+        result["intended_config"] = intended_vrf
+        result["changed"] = True
+    else:
+        # the VRF exists but need to check the description
+        configured_desc = configured_vrf["Cisco-IOS-XE-native:definition"].get(
+            "description"
+        )
+
+        # only update if it's defined and different from configured
+        if (
+            module.params["description"]
+            and configured_desc != module.params["description"]
+        ):
+            # update the description to the new value
+            # but preserve any other configuration the VRF may have
+            intended_vrf = deepcopy(configured_vrf)
+            intended_vrf["Cisco-IOS-XE-native:definition"][
+                "description"
+            ] = f"{module.params['description']}"
+
+            # mark the module as having made changes
+            result["intended_config"] = intended_vrf
+            result["changed"] = True
+
+    Note: If you ever get confused as to where code should be added, Step 8 below contains the full listing of the final code in the iosxe_rest_vrf.py script.
+
+Step 7
+
+The final piece of code that you need to add is actually sending an API request with the configuration updates, but only if necessary. The functionality here ensures that this module follows the two core design principles of Ansible modules:
+
+    Modules should try to be idempotent.
+    Modules should not make configuration changes when they are not needed (i.e. when existing config is the same as intended config).
+
+A bonus here is adding support for Ansible's check-mode to allow the module to perform a dry-run (i.e. not make any changes, but report if changes are needed).
+
+    # send the API request to the device using PUT and only perform changes
+    # when a required change has been detected and if check mode is off
+    if result["changed"] and not module.check_mode:
+        response = requests.put(
+            url,
+            headers=headers,
+            auth=auth,
+            verify=module.params["verify"],
+            data=json.dumps(intended_vrf),
+        )
+
+        # return the JSON response from the API if it exists
+        if response.text:
+            result["json"] = response.json()
+
+        # add a message based on the status code
+        if response.ok:
+            result["msg"] = f"OK {response.status_code}"
+        # the request failed so the module should fail as well
+        else:
+            result["msg"] = f"API request failed with code {response.status_code}"
+            module.fail_json(**result)
+
+    Note: If you ever get confused as to where code should be added, Step 8 below contains the full listing of the final code in the iosxe_rest_vrf.py script.
+
+Step 8
+
+The full iosxe_rest_vrf.py code is listed below, compare it with your own!
+
+#!/usr/bin/env python3
+
+DOCUMENTATION = """
+---
+module: iosxe_rest_vrf
+short_description: This module updates VRF configuration via the IOSXE REST API.
+version_added: "1.0.0"
+description: This module uses the requests Python library to make API calls against the IOSXE device.
+options:
+    host:
+        description: Enter the IP or hostname of the IOSXE device
+        required: true
+        type: str
+    user:
+        description: Enter the device username
+        required: true
+        type: str
+    password:
+        description: Enter the device password
+        required: true
+        type: str
+    verify:
+        description: Enable or disable SSL verification, it will disabled by default
+        required: false
+        type: bool
+    name:
+        description: The VRF's name you want to manage
+        required: true
+        type: str
+    description:
+        description: The VRF's description (optional)
+        required: false
+        type: str
+
+author:
+    - NetworkToCode (@networktocode)
+"""
+
+EXAMPLES = """
+# Collect Device Version
+- name: UPDATE VRF DESCRIPTION
+  iosxe_rest_vrf:
+    host: "{{ inventory_hostname }}"
+    user: "{{ username }}"
+    password: "{{ password }}"
+    name: CORP
+    description: VRF FOR CORPORATE USERS
+"""
+
+RETURN = """
+# These are examples of possible return values, and in general should use other names for return values.
+intended_config:
+    description: The VRF data that will be sent to the API via the PATCH request
+    type: str
+    returned: always
+    sample: '{"Cisco-IOS-XE-native:definition": {"description": "VRF FOR CORPORATE USERS", "name": "CORP"}}}'
+msg:
+    description: A status message including the HTTP response code.
+    type: str
+    returned: always
+    sample: 'OK 204'
+"""
+
+from ansible.module_utils.basic import AnsibleModule
+from copy import deepcopy
+import requests
+import json
+
+requests.packages.urllib3.disable_warnings()
+
+
+def main():
+    # define available arguments/parameters a user can pass to the module
+    module_args = dict(
+        host=dict(type="str", required=True),
+        user=dict(type="str", required=True),
+        password=dict(type="str", required=True, no_log=True),
+        verify=dict(type="bool", default=False),
+        name=dict(type="str", required=True),
+        description=dict(type="str", required=False),
+    )
+    module = AnsibleModule(argument_spec=module_args, supports_check_mode=False)
+
+    # prepare the standard return object
+    result = dict(changed=False)
+
+    # set up the API request parameters
+    auth = requests.auth.HTTPBasicAuth(module.params["user"], module.params["password"])
+    # this module supports only json
+    headers = {
+        "Accept": "application/yang-data+json",
+        "Content-Type": "application/yang-data+json",
+    }
+    # this module supports only the Cisco-IOS-XE-native data model
+    base_url = (
+        f"https://{module.params['host']}/restconf/data/Cisco-IOS-XE-native:native"
+    )
+    # manages vrf by name
+    url = f"{base_url}/vrf/definition={module.params['name']}"
+
+    # try a GET request to the API to see what configuration is already there
+    get_response = requests.get(
+        url,
+        headers=headers,
+        auth=auth,
+        verify=module.params["verify"],
+    )
+
+    if get_response.status_code == 404:
+        # the VRF does not exist on the device
+        configured_vrf = None
+        result["existing_config"] = None
+    elif get_response.ok:
+        # the VRF does exist, so use its configuration
+        configured_vrf = get_response.json()
+        result["existing_config"] = get_response.json()
+    else:
+        # any other code means an error, so module should fail
+        result["msg"] = f"API request failed with code {response.status_code}"
+        module.fail_json(**result)
+
+    # prepare the payload to only make the necessary changes
+    if configured_vrf == None:
+        # need to create the VRF and optionally set the description
+        intended_vrf = {
+            "Cisco-IOS-XE-native:definition": {"name": f"{module.params['name']}"}
+        }
+
+        # only set if it's defined since an empty description
+        # is not acceptable by the API
+        if module.params["description"]:
+            intended_vrf["Cisco-IOS-XE-native:definition"][
+                "description"
+            ] = f"{module.params['description']}"
+
+        # mark the module as having made changes
+        result["intended_config"] = intended_vrf
+        result["changed"] = True
+    else:
+        # the VRF exists but need to check the description
+        configured_desc = configured_vrf["Cisco-IOS-XE-native:definition"].get(
+            "description"
+        )
+
+        # only update if it's defined and different from configured
+        if (
+            module.params["description"]
+            and configured_desc != module.params["description"]
+        ):
+            # update the description to the new value
+            # but preserve any other configuration the VRF may have
+            intended_vrf = deepcopy(configured_vrf)
+            intended_vrf["Cisco-IOS-XE-native:definition"][
+                "description"
+            ] = f"{module.params['description']}"
+
+            # mark the module as having made changes
+            result["intended_config"] = intended_vrf
+            result["changed"] = True
+
+    # send the API request to the device using PUT and only perform changes
+    # when a required change has been detected and if check mode is off
+    if result["changed"] and not module.check_mode:
+        response = requests.put(
+            url,
+            headers=headers,
+            auth=auth,
+            verify=module.params["verify"],
+            data=json.dumps(intended_vrf),
+        )
+
+        # return the JSON response from the API if it exists
+        if response.text:
+            result["json"] = response.json()
+
+        # add a message based on the status code
+        if response.ok:
+            result["msg"] = f"OK {response.status_code}"
+        # the request failed so the module should fail as well
+        else:
+            result["msg"] = f"API request failed with code {response.status_code}"
+            module.fail_json(**result)
+
+    # return successfully and pass the results to ansible
+    module.exit_json(**result)
+
+
+if __name__ == "__main__":
+    main()
+
+Task 2 - Test the new module code in a playbook
+
+You are now ready to test the new module in an Ansible playbook and see if it does work as intended, fixing any issues that might appear.
+Step 1
+
+In your editor, open the pb_vrf_descriptions.yml file and review its contents.
+
+It provides the necessary credentials and details to the module so it can do its job and executes on localhost since the module handles its own connections (in this case API calls).
+Step 2
+
+The playbook's intention is to have the CORP VRF configured with a description of VRF FOR CORPORATE USERS. Run the playbook.
+
+ntc@ntc-training:lab10$ ansible-playbook -i inventory pb_vrf_descriptions.yml
+
+PLAY [TESTING THE IOSXE_REST_VRF MODULE] ***************************************
+
+TASK [UPDATE DESCRIPTION FOR CORP VRF] *****************************************
+changed: [csr2 -> localhost]
+changed: [csr3 -> localhost]
+changed: [csr1 -> localhost]
+
+PLAY RECAP *********************************************************************
+csr1                       : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+csr2                       : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+csr3                       : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+It should run successfully and report that changes were made.
+Step 3
+
+The second step is to confirm it is idempotent. Run it again without changing anything. It should not make any changes and report only success.
+
+ntc@ntc-training:lab10$ ansible-playbook -i inventory pb_vrf_descriptions.yml
+
+PLAY [TESTING THE IOSXE_REST_VRF MODULE] ****************************************
+
+TASK [UPDATE DESCRIPTION FOR CORP VRF] ******************************************
+ok: [csr3 -> localhost]
+ok: [csr1 -> localhost]
+ok: [csr2 -> localhost]
+
+PLAY RECAP **********************************************************************
+csr1                       : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+csr2                       : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+csr3                       : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+That's great, notice how no changes were made the second time you ran it. Feel free to run it again for a third time, with the same outcome.
+Step 4
+
+In a new terminal window, open an SSH connection to csr1 and remove the CORP VRF completely. See below for the complete commands:
+
+ntc@ntc-training:~$ ssh csr1
+Warning: Permanently added 'csr1,172.18.0.6' (RSA) to the list of known hosts.
+Password: 
+
+csr1#conf t
+Enter configuration commands, one per line.  End with CNTL/Z.
+csr1(config)#no vrf definition CORP
+% IPv4 and IPv6 addresses from all interfaces in VRF CORP have been removed
+csr1(config)#end
+csr1#
+
+Step 5
+
+Run the playbook again only for csr1, but this time with the -v flag to see the module outputs:
+
+ntc@ntc-training:lab10$ ansible-playbook -i inventory pb_vrf_descriptions.yml -v -l csr1
+Using /home/ntc/labs/lab10/ansible.cfg as config file
+
+PLAY [TESTING THE IOSXE_REST_VRF MODULE] ****************************************
+
+TASK [UPDATE DESCRIPTION FOR CORP VRF] ******************************************
+changed: [csr1 -> localhost] => {
+    "changed": true,
+    "existing_config": null,
+    "intended_config": {
+        "Cisco-IOS-XE-native:definition": {
+            "description": "VRF FOR CORPORATE USERS",
+            "name": "CORP"
+        }
+    }
+}
+
+MSG:
+
+OK 201
+
+PLAY RECAP **********************************************************************
+csr1                       : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+It reports making changes, as expected. Because of the -v flag, you can also see the values of the existing_config (null in this case since the VRF did not exist in the running configuration of csr1) and the intended_config, which is what was sent to the device.
+Step 6
+
+Run the playbook again with the same parameters. It will check what configuration is present, compare it with the intended configuration, and arrive at the conclusion that no changes are needed.
+
+ntc@ntc-training:lab10$ ansible-playbook -i inventory pb_vrf_descriptions.yml -v -l csr1
+Using /home/ntc/labs/lab10/ansible.cfg as config file
+
+PLAY [TESTING THE IOSXE_REST_VRF MODULE] ****************************************
+
+TASK [UPDATE DESCRIPTION FOR CORP VRF] ******************************************
+ok: [csr1 -> localhost] => {
+    "changed": false,
+    "existing_config": {
+        "Cisco-IOS-XE-native:definition": {
+            "description": "VRF FOR CORPORATE USERS",
+            "name": "CORP"
+        }
+    }
+}
+
+PLAY RECAP **********************************************************************
+csr1                       : ok=1    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+    Note: you might notice that in this case, the intended_config is not returned by the module. For consistency, this would be an improvement to make on the module code, so that the return values are always returned with relevant values.
+
+Step 7
+
+Open an SSH connection to csr1 again and change the description of the CORP VRF. See below for the complete commands:
+
+csr1#conf t
+csr1(config)#vrf definition CORP
+csr1(config-vrf)#description CHANGED FOR TESTING PURPOSES
+csr1(config-vrf)#end
+csr1#
+csr1#sh run vrf CORP
+Building configuration...
+
+Current configuration : 69 bytes
+vrf definition CORP
+ description CHANGED FOR TESTING PURPOSES
+!
+end
+
+csr1#
+
+Step 8
+
+Run the playbook with ansible-playbook -i inventory pb_vrf_descriptions.yml -v -l csr1 --check. This time, you're running it in check mode, that is without allowing it to make changes.
+
+ntc@ntc-training:lab10$ ansible-playbook -i inventory pb_vrf_descriptions.yml -v -l csr1 --check
+Using /home/ntc/labs/lab10/ansible.cfg as config file
+
+PLAY [TESTING THE IOSXE_REST_VRF MODULE] ****************************************
+
+TASK [UPDATE DESCRIPTION FOR CORP VRF] ******************************************
+skipping: [csr1] => {
+    "changed": false
+}
+
+MSG:
+
+remote module (iosxe_rest_vrf) does not support check mode
+
+PLAY RECAP **********************************************************************
+csr1                       : ok=0    changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0
+
+You'll notice it says that the task was skipped because the module does not support check mode. This is because Ansible verifies with the module spec whether it supports or not check mode, and in this case the setting was not updated.
+Step 9
+
+In the iosxe_rest_vrf.py file, edit the line module = AnsibleModule(argument_spec=module_args, supports_check_mode=False). It should be around line number 82.
+
+Update the supports_check_mode value to True.
+
+module = AnsibleModule(argument_spec=module_args, supports_check_mode=True)
+
+Step 10
+
+In the iosxe_rest_vrf.py file, edit the line result = dict(changed=False). It should be around line number 85.
+
+Add the check_mode=module.check_mode parameter so the module returns whether or not it ran in "check mode".
+
+    result = dict(changed=False, check_mode=module.check_mode)
+
+    Note: don't forget to save the file!
+
+Step 11
+
+Run the playbook with ansible-playbook -i inventory pb_vrf_descriptions.yml -v -l csr1 --check. This time,it should run in check mode, reporting what changes it would make.
+
+ntc@ntc-training:lab10$ ansible-playbook -i inventory pb_vrf_descriptions.yml -v -l csr1 --check
+Using /home/ntc/labs/lab10/ansible.cfg as config file
+
+PLAY [TESTING THE IOSXE_REST_VRF MODULE] ****************************************
+
+TASK [UPDATE DESCRIPTION FOR CORP VRF] ******************************************
+changed: [csr1 -> localhost] => {
+    "changed": true,
+    "check_mode": true,
+    "existing_config": {
+        "Cisco-IOS-XE-native:definition": {
+            "description": "CHANGED FOR TESTING PURPOSES",
+            "name": "CORP"
+        }
+    },
+    "intended_config": {
+        "Cisco-IOS-XE-native:definition": {
+            "description": "VRF FOR CORPORATE USERS",
+            "name": "CORP"
+        }
+    }
+}
+
+PLAY RECAP **********************************************************************
+csr1                       : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+It now shows the "before" (existing_config) and the "after" (intended_config), but it does not send the PUT request because of check mode.
+Step 12
+
+In the SSH session to csr1, confirm that no changes were made.
+
+csr1#sh run vrf CORP
+Building configuration...
+
+Current configuration : 69 bytes
+vrf definition CORP
+ description CHANGED FOR TESTING PURPOSES
+!
+end
+
+csr1#
+
+Step 13
+
+Remove the --check from the previous command and run the playbook again:
+
+ntc@ntc-training:lab10$ ansible-playbook -i inventory pb_vrf_descriptions.yml -v -l csr1
+Using /home/ntc/labs/lab10/ansible.cfg as config file
+
+PLAY [TESTING THE IOSXE_REST_VRF MODULE] ****************************************
+
+TASK [UPDATE DESCRIPTION FOR CORP VRF] ******************************************
+changed: [csr1 -> localhost] => {
+    "changed": true,
+    "check_mode": false,
+    "existing_config": {
+        "Cisco-IOS-XE-native:definition": {
+            "description": "CHANGED FOR TESTING PURPOSES",
+            "name": "CORP"
+        }
+    },
+    "intended_config": {
+        "Cisco-IOS-XE-native:definition": {
+            "description": "VRF FOR CORPORATE USERS",
+            "name": "CORP"
+        }
+    }
+}
+
+MSG:
+
+OK 204
+
+PLAY RECAP **********************************************************************
+csr1                       : ok=1    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+The output is identical, but this time the changes were actually sent to the device.
+Step 14
+
+In the SSH session to csr1, confirm that the description changed.
+
+csr1#sh run vrf CORP
+Building configuration...
+
+Current configuration : 64 bytes
+vrf definition CORP
+ description VRF FOR CORPORATE USERS
+!
+end
+
+csr1#
+
+Step 15
+
+Feel free to continue to experiment with your module code... try deleting only the description from the VRF, or changing the values in the playbook. While testing, always run the playbook with -v so you can see the very useful module outputs!
+Conclusion
+
+In this lab you've made more progress towards building the iosxe_rest_vrf into a production grade module: it now supports check mode and operates in an idempotent manner, with deteministic outcomes and only making changes when and if they are necessary.
+
+There are many more things to be improved in the code, the story does not end here... you could keep working on the code to achieve some of the following:
+
+    Add more VRF level configuration parameters to the module.
+    Add a state: present/absent parameter that also allows you to delete a VRF definition.
+    Add more error checking and exception handling to make the module more resilient to erroneous API calls.
+    Add input data validation to for the module parameters (i.e. what are valid characters in the description?)
