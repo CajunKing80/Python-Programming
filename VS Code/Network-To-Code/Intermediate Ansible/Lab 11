@@ -1,0 +1,483 @@
+Lab 11 - Managing and Using Ansible Content Collections
+
+In this lab you will learn how to manage collections in both Ansible 2.9 (before collections became implicit) and in later Ansible versions (e.g. 2.11) that fully rely on plugins such as modules and filters being provided by the collection system.
+Task 1 - Use Collections with Ansible 2.9
+
+To start with, you will update a playbook that retrieves facts from the Cisco IOSXE devices in the lab (csr1-3) to work with newly installed collections in Ansible 2.9.
+Step 1
+
+In your terminal on the lab workstation, change into the /home/ntc/labs/lab11 folder and confirm it contains three files as seen below:
+
+ntc@ntc-training:~$ cd /home/ntc/labs/lab11
+ntc@ntc-training:lab11$ ls
+ansible.cfg  inventory  pb_builtin_facts.yml
+
+Step 2
+
+Open the ansible.cfg file and verify that the following text is on line 7:
+
+collections_paths = ./collections
+
+This configuration tells ansible-galaxy that all collections should be installed here in /home/ntc/labs/lab11/collections.
+
+    The default is to install them under /home/ntc/.ansible/collections which in this case is not desirable.
+
+Step 3
+
+Open the inventory and the pb_builtin_facts.yml files in your editor and familiarize yourself with their contents.
+Step 4
+
+Execute the pb_builtin_facts.yml playbook to verify it works:
+
+ntc@ntc-training:lab11$ ansible-playbook -i inventory pb_builtin_facts.yml
+
+PLAY [USING THE BUILTIN IOS_FACTS MODULE] ***************************************************
+
+TASK [GATHER IOS FACTS] *********************************************************************
+[WARNING]: default value for `gather_subset` will be changed to `min` from `!config` v2.11
+onwards
+ok: [csr1]
+ok: [csr3]
+ok: [csr2]
+
+TASK [PRINT IOS VERSION] ********************************************************************
+ok: [csr1] => {
+    "msg": "Version is 17.01.01"
+}
+ok: [csr2] => {
+    "msg": "Version is 17.01.01"
+}
+ok: [csr3] => {
+    "msg": "Version is 17.01.01"
+}
+
+PLAY RECAP **********************************************************************************
+csr1                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+csr2                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+csr3                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+ntc@ntc-training:lab11$
+
+Step 5
+
+You decide you would like to use the newer versions of the IOS modules instead of the ones included in Ansible 2.9, so install the cisco.ios collection:
+
+ntc@ntc-training:lab11$ ansible-galaxy collection install cisco.ios
+Process install dependency map
+Starting collection install process
+Installing 'cisco.ios:2.3.0' to '/home/ntc/labs/lab11/collections/ansible_collections/cisco/ios'
+Installing 'ansible.netcommon:2.2.0' to '/home/ntc/labs/lab11/collections/ansible_collections/ansible/netcommon'
+Installing 'ansible.utils:2.3.0' to '/home/ntc/labs/lab11/collections/ansible_collections/ansible/utils'
+
+    Note: by default it will retrieve the latest version published on Ansible Galaxy. Versions you see might be slightly different than the ones in the lab output above.
+
+Step 6
+
+Confirm the collection has been installed under the collections subfolder by using the tree command:
+
+ntc@ntc-training:lab11$ tree -L 3 collections/
+collections/
+└── ansible_collections
+    ├── ansible
+    │   ├── netcommon
+    │   └── utils
+    └── cisco
+        └── ios
+
+6 directories, 0 files
+
+As you can see, the cisco.ios collection has two dependencies, which have been automatically installed: ansible.netcommon and ansible.utils.
+Step 7
+
+Create a copy of the pb_builtin_facts.yml named pb_collection_facts.yml:
+
+ntc@ntc-training:lab11$ cp pb_builtin_facts.yml pb_collection_facts.yml
+
+Step 8
+
+Edit the pb_collection_facts.yml, explicitly telling it to use the ansible.netcommon.network_cli connection plugin (provided by the collection) and the cisco.ios.ios_facts modules (also provided by the collection).
+
+The full playbook should look as follows:
+
+---
+
+- name: USING THE BUILTIN IOS_FACTS MODULE
+  hosts: iosxe
+  gather_facts: false
+  connection: ansible.netcommon.network_cli
+
+  tasks:
+    - name: GATHER IOS FACTS
+      cisco.ios.ios_facts:
+
+    - name: PRINT IOS VERSION
+      debug:
+        msg: "Version is {{ ansible_net_version }}"
+
+Step 9
+
+Execute the pb_collection_facts.yml playbook:
+
+ntc@ntc-training:lab11$ ansible-playbook -i inventory pb_collection_facts.yml
+
+PLAY [USING THE BUILTIN IOS_FACTS MODULE] ***************************************************
+
+TASK [GATHER IOS FACTS] *********************************************************************
+ok: [csr2]
+ok: [csr3]
+ok: [csr1]
+
+TASK [PRINT IOS VERSION] ********************************************************************
+ok: [csr1] => {
+    "msg": "Version is 17.01.01"
+}
+ok: [csr2] => {
+    "msg": "Version is 17.01.01"
+}
+ok: [csr3] => {
+    "msg": "Version is 17.01.01"
+}
+
+PLAY RECAP **********************************************************************************
+csr1                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+csr2                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+csr3                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+The output will look the same, but it now uses the code provided by the newly installed collections.
+Task 2 - Use Collections with Ansible 4.x
+
+You will now create an execution environment for Ansible 4.x which has migrated fully to using content collections and observe how the two playbooks behave in this scenario.
+Step 1
+
+Create a new Python virtual environment named venv.lab11.full and activate it:
+
+ntc@ntc-training:lab11$ python -m venv venv.lab11.full
+ntc@ntc-training:lab11$ source venv.lab11.full/bin/activate
+(venv.lab11.full) ntc@ntc-training:lab11$
+
+    Confirm that your shell prompt is now showing the virtual environment name!
+
+Step 2
+
+Update pip first:
+
+(venv.lab11.full) ntc@ntc-training:lab11$ pip install -U pip
+Collecting pip
+  Using cached https://files.pythonhosted.org/packages/47/ca/f0d790b6e18b3a6f3bd5e80c2ee4edbb5807286c21cdd0862ca933f751dd/pip-21.1.3-py3-none-any.whl
+Installing collected packages: pip
+  Found existing installation: pip 18.1
+    Uninstalling pip-18.1:
+      Successfully uninstalled pip-18.1
+Successfully installed pip-21.1.3
+
+Step 3
+
+Then install ansible version 4.* by running the command below - the asterisk tells pip to install the latest minor version.
+
+(venv.lab11.full) ntc@ntc-training:lab11$ pip install 'ansible==4.*' paramiko
+<OUTPUT TRIMMED>
+Successfully installed MarkupSafe-2.0.1 PyYAML-5.4.1 ansible-4.2.0 ansible-core-2.11.2 bcrypt-3.2.0 cffi-1.14.5 cryptography-3.4.7 jinja2-3.0.1 packaging-21.0 paramiko-2.7.2 pycparser-2.20 pynacl-1.4.0 pyparsing-2.4.7 resolvelib-0.5.4 six-1.16.0
+
+    Note: The output is not fully shown since it is quite verbose, but make sure you get a successful message at the end. You can verify using pip list that the correct packages have been installed.
+
+Step 4
+
+Confirm the Ansible version:
+
+(venv.lab11.full) ntc@ntc-training:lab11$ ansible --version
+ansible [core 2.11.2]
+  config file = /home/ntc/labs/lab11/ansible.cfg
+  configured module search path = ['/home/ntc/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /home/ntc/labs/lab11/venv.lab11.full/lib/python3.6/site-packages/ansible
+  ansible collection location = /home/ntc/labs/lab11/collections
+  executable location = /home/ntc/labs/lab11/venv.lab11.full/bin/ansible
+  python version = 3.6.8 (default, Jun 11 2019, 01:16:11) [GCC 6.3.0 20170516]
+  jinja version = 3.0.1
+  libyaml = True
+
+Notice that Ansible 4.x tells you what is the search path for collections and it is the local collections folder as specified in the ansible.cfg file.
+Step 5
+
+You can now also list all the installed collections using the ansible-galaxy collection list command:
+
+(venv.lab11.full) ntc@ntc-training:lab11$ ansible-galaxy collection list
+
+# /home/ntc/labs/lab11/collections/ansible_collections
+Collection        Version
+----------------- -------
+ansible.netcommon 2.2.0
+ansible.utils     2.3.0
+cisco.ios         2.3.0
+
+# /home/ntc/labs/lab11/venv.lab11.full/lib/python3.6/site-packages/ansible_collections
+Collection                    Version
+----------------------------- -------
+amazon.aws                    1.5.0
+ansible.netcommon             2.2.0
+ansible.posix                 1.2.0
+ansible.utils                 2.3.0
+ansible.windows               1.7.0
+arista.eos                    2.2.0
+awx.awx                       19.2.2
+azure.azcollection            1.7.0
+check_point.mgmt              2.0.0
+chocolatey.chocolatey         1.1.0
+cisco.aci                     2.0.0
+cisco.asa                     2.0.2
+cisco.intersight              1.0.15
+cisco.ios                     2.3.0
+cisco.iosxr                   2.3.0
+cisco.meraki                  2.4.2
+cisco.mso                     1.2.0
+cisco.nso                     1.0.3
+cisco.nxos                    2.4.0
+cisco.ucs                     1.6.0
+<OUTPUT TRIMMED>
+
+The ansible package itself installs a number of collections under the /home/ntc/labs/lab11/venv.lab11.full/lib/python3.6/site-packages/ansible_collections path, so you can see two locations now.
+Step 6
+
+Execute the pb_builtin_facts.yml playbook by running the ansible-playbook -i inventory pb_builtin_facts.yml command. It should work, despite it not explicitly using collections.
+Step 7
+
+Now execute the same command, but with verbosity level 2 (add -vv to the previous command):
+
+(venv.lab11.full) ntc@ntc-training:lab11$ ansible-playbook -i inventory pb_builtin_facts.yml -vv
+
+<OUTPUT TRIMMED>
+
+TASK [GATHER IOS FACTS] *********************************************************************
+task path: /home/ntc/labs/lab11/pb_builtin_facts.yml:8
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: connection) ansible.builtin.network_cli to ansible.netcommon.network_cli
+redirecting (type: terminal) ansible.builtin.ios to cisco.ios.ios
+redirecting (type: terminal) ansible.builtin.ios to cisco.ios.ios
+redirecting (type: cliconf) ansible.builtin.ios to cisco.ios.ios
+
+<OUTPUT TRIMMED>
+
+Take note that Ansible reports "redirecting" your connection and module calls to their respective collections. This happens because Ansible has a mapping built-in to allow for backwards compatibility with pre-collections playbooks.
+
+    Note: In the coming years, it's anticipated that this redirect logic will be removed and Fully Qualified Collection Names (FQCNs) will be required for both roles and collections.
+
+Step 8
+
+Execute the pb_collection_facts.yml playbook by running the ansible-playbook -i inventory pb_collection_facts.yml command. It should work as expected.
+Task 3 - Build a Minimal Ansible 4.x Installation
+
+You are now going to install only the bare minimum necessary to execute your playbooks: ansible-core and the cisco.ios collection.
+Step 1
+
+First, deactivate the Python virtual environment.
+
+(venv.lab11.full) ntc@ntc-training:lab11$ deactivate
+ntc@ntc-training:lab11$
+
+Step 2
+
+Delete the collections folder under /home/ntc/labs/lab11:
+
+ntc@ntc-training:lab11$ pwd
+/home/ntc/labs/lab11
+ntc@ntc-training:lab11$ rm -rf collections
+
+Step 3
+
+Create a new Python virtual environment named venv.lab11.core and activate it:
+
+ntc@ntc-training:lab11$ python -m venv venv.lab11.core
+ntc@ntc-training:lab11$ source venv.lab11.core/bin/activate
+(venv.lab11.core) ntc@ntc-training:lab11$
+
+    Confirm that your shell prompt is now showing the correct virtual environment name!
+
+Step 4
+
+Update pip first:
+
+(venv.lab11.core) ntc@ntc-training:lab11$ pip install -U pip
+Collecting pip
+  Using cached https://files.pythonhosted.org/packages/47/ca/f0d790b6e18b3a6f3bd5e80c2ee4edbb5807286c21cdd0862ca933f751dd/pip-21.1.3-py3-none-any.whl
+Installing collected packages: pip
+  Found existing installation: pip 18.1
+    Uninstalling pip-18.1:
+      Successfully uninstalled pip-18.1
+Successfully installed pip-21.1.3
+
+Step 5
+
+Then install ansible-core version 2.11.* by running the command below - the asterisk tells pip to install the latest minor version.
+
+(venv.lab11.core) ntc@ntc-training:lab11$ pip install 'ansible-core==2.11.*' paramiko
+
+    Note: Please refer to the slides for the relationship between the ansible and ansible-core package versions.
+
+Step 6
+
+You now only have the "core" of Ansible, which is a very limited amount of modules and the usual ansible-playbook, ansible-doc, ansible-galaxy etc. commands.
+
+(venv.lab11.core) ntc@ntc-training:lab11$ ansible --version
+ansible [core 2.11.2]
+  config file = /home/ntc/labs/lab11/ansible.cfg
+  configured module search path = ['/home/ntc/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /home/ntc/labs/lab11/venv.lab11.core/lib/python3.6/site-packages/ansible
+  ansible collection location = /home/ntc/labs/lab11/collections
+  executable location = /home/ntc/labs/lab11/venv.lab11.core/bin/ansible
+  python version = 3.6.8 (default, Jun 11 2019, 01:16:11) [GCC 6.3.0 20170516]
+  jinja version = 3.0.1
+  libyaml = True
+
+Step 7
+
+Execute the pb_collection_facts.yml playbook.
+
+(venv.lab11.core) ntc@ntc-training:lab11$ ansible-playbook -i inventory pb_collection_facts.yml
+ERROR! couldn't resolve module/action 'cisco.ios.ios_facts'. This often indicates a misspelling, missing collection, or incorrect module path.
+
+The error appears to be in '/home/ntc/labs/lab11/pb_collection_facts.yml': line 9, column 7, but may
+be elsewhere in the file depending on the exact syntax problem.
+
+The offending line appears to be:
+
+  tasks:
+    - name: GATHER IOS FACTS
+      ^ here
+
+It fails because you do not have the cisco.ios collection installed now.
+Step 8
+
+In /home/ntc/labs/lab11, create a new file named requirements.yml with the following contents:
+
+---
+collections:
+  - name: cisco.ios
+
+Step 9
+
+Install the required collections:
+
+(venv.lab11.core) ntc@ntc-training:lab11$ ansible-galaxy collection install -r requirements.yml
+Starting galaxy collection install process
+Process install dependency map
+Starting collection install process
+Downloading https://galaxy.ansible.com/download/cisco-ios-2.3.0.tar.gz to /home/ntc/.ansible/tmp/ansible-local-202341ors6c5m/tmpy63kxjjc/cisco-ios-2.3.0-1rjviag6
+Installing 'cisco.ios:2.3.0' to '/home/ntc/labs/lab11/collections/ansible_collections/cisco/ios'
+Downloading https://galaxy.ansible.com/download/ansible-netcommon-2.2.0.tar.gz to /home/ntc/.ansible/tmp/ansible-local-202341ors6c5m/tmpy63kxjjc/ansible-netcommon-2.2.0-kcp4fz1x
+cisco.ios:2.3.0 was installed successfully
+Installing 'ansible.netcommon:2.2.0' to '/home/ntc/labs/lab11/collections/ansible_collections/ansible/netcommon'
+Downloading https://galaxy.ansible.com/download/ansible-utils-2.3.0.tar.gz to /home/ntc/.ansible/tmp/ansible-local-202341ors6c5m/tmpy63kxjjc/ansible-utils-2.3.0-t17ixr49
+ansible.netcommon:2.2.0 was installed successfully
+Installing 'ansible.utils:2.3.0' to '/home/ntc/labs/lab11/collections/ansible_collections/ansible/utils'
+ansible.utils:2.3.0 was installed successfully
+
+Step 10
+
+Check the list of the installed collections:
+
+(venv.lab11.core) ntc@ntc-training:lab11$ ansible-galaxy collection list
+
+# /home/ntc/labs/lab11/collections/ansible_collections
+Collection        Version
+----------------- -------
+ansible.netcommon 2.2.0
+ansible.utils     2.3.0
+cisco.ios         2.3.0
+
+That's all you need!
+Step 11
+
+Execute the pb_collection_facts.yml playbook. It will now run successfully.
+
+(venv.lab11.core) ntc@ntc-training:lab11$ ansible-playbook -i inventory pb_collection_facts.yml
+
+PLAY [USING THE BUILTIN IOS_FACTS MODULE] *****************************************************************
+
+TASK [GATHER IOS FACTS] ***********************************************************************************
+ok: [csr1]
+ok: [csr2]
+ok: [csr3]
+
+TASK [PRINT IOS VERSION] **********************************************************************************
+ok: [csr1] => {
+    "msg": "Version is 17.01.01"
+}
+ok: [csr2] => {
+    "msg": "Version is 17.01.01"
+}
+ok: [csr3] => {
+    "msg": "Version is 17.01.01"
+}
+
+PLAY RECAP ************************************************************************************************
+csr1                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+csr2                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+csr3                       : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+Task 4 - Install Collections from a Git Repository
+
+Not all collections can be found through Ansible Galaxy. The case may be you need to install a collection directly from a Git repository, because it is not public, or you need to install a specific version that has not been officialy released through Galaxy.
+Step 1
+
+Edit the /home/ntc/labs/lab11/requirements.yml file so it has the following contents:
+
+---
+collections:
+  - name: cisco.ios
+
+  - name: https://github.com/nautobot/nautobot-ansible
+    type: git
+    version: v2.0.0
+
+The second collection is coming from a Git repository hosted on GitHub and it explicitly requires the v2.0.0 tagged commit.
+Step 2
+
+Ensuring you're still under the venv.lab11.core virtual environment, run the ansible-galaxy collection install -r requirements.yml command.
+
+(venv.lab11.core) ntc@ntc-training:lab11$ ansible-galaxy collection install -r requirements.yml
+Starting galaxy collection install process
+Process install dependency map
+Cloning into '/home/ntc/.ansible/tmp/ansible-local-20379_donls_p/tmp20kthq51/nautobot-ansible1tcha4sr'...
+remote: Enumerating objects: 4419, done.
+remote: Counting objects: 100% (784/784), done.
+remote: Compressing objects: 100% (284/284), done.
+remote: Total 4419 (delta 532), reused 689 (delta 472), pack-reused 3635
+Receiving objects: 100% (4419/4419), 1.89 MiB | 0 bytes/s, done.
+Resolving deltas: 100% (2948/2948), done.
+Note: checking out 'v2.0.0'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b <new-branch-name>
+
+HEAD is now at 5c99f32... Merge pull request #33 from jvanderaa/fix25_deprecate_items
+Starting collection install process
+Skipping 'cisco.ios:2.3.0' as it is already installed
+Skipping 'ansible.netcommon:2.2.0' as it is already installed
+Skipping 'ansible.utils:2.3.0' as it is already installed
+Installing 'networktocode.nautobot:2.0.0' to '/home/ntc/labs/lab11/collections/ansible_collections/networktocode/nautobot'
+Created collection for networktocode.nautobot:2.0.0 at /home/ntc/labs/lab11/collections/ansible_collections/networktocode/nautobot
+networktocode.nautobot:2.0.0 was installed successfully
+
+Step 3
+
+List the installed collections - as expected, networktocode.nautobot is now present with a version of 2.0.0:
+
+(venv.lab11.core) ntc@ntc-training:lab11$ ansible-galaxy collection list
+
+# /home/ntc/labs/lab11/collections/ansible_collections
+Collection             Version
+---------------------- -------
+ansible.netcommon      2.2.0
+ansible.utils          2.3.0
+cisco.ios              2.3.0
+networktocode.nautobot 2.0.0
+
+Conclusion
+
+You have learned how to manage collections from both Ansible Galaxy and Git repositories and modified playbooks to leverage the modules and connections plugins provided by the newly installed collections.
